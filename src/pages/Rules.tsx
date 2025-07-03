@@ -14,7 +14,7 @@ export default function Rules() {
   useEffect(() => {
     const fetchRule = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/posting-rules');
+        const res = await axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/posting-rules');
         const first = res.data[0];
         setRule(first);
       } catch (err) {

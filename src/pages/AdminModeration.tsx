@@ -19,7 +19,7 @@ export default function AdminModeration() {
   const fetchNotes = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/feedback-forms');
+      const res = await axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/feedback-forms');
       setNotes(res.data);
     } catch (err) {
       console.error('Failed to fetch notes', err);
@@ -30,7 +30,7 @@ export default function AdminModeration() {
 
   const toggleArchive = async (id: string) => {
     try {
-     await axios.patch(`http://localhost:5000/feedback-forms/${id}/toggle-archive`);
+     await axios.patch(`http://ambassador-tracking-backend-production.up.railway.app:5000/feedback-forms/${id}/toggle-archive`);
       fetchNotes();
     } catch (err) {
       console.error('Failed to update note', err);

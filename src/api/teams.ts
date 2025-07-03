@@ -16,7 +16,7 @@ export async function createTeam(name: string, leaderId: string, memberIds: stri
 }
 
 export const deleteTeam = async (id: string) => {
-  await axios.delete(`http://localhost:5000/admin/teams/${id}`);
+  await axios.delete(`http://ambassador-tracking-backend-production.up.railway.app:5000/admin/teams/${id}`);
 };
 
 export const updateTeam = async (teamId: string, payload: { name: string; leaderId: string; memberIds: string[] }) => {

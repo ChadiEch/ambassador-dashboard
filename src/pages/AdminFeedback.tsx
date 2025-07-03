@@ -23,7 +23,7 @@ export default function AdminFeedback() {
   const fetchNotes = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/feedback-forms', {
+      const res = await axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/feedback-forms', {
         params: { search, from, to },
       });
       setNotes(res.data);

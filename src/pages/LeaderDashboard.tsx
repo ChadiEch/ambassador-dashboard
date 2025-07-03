@@ -51,7 +51,7 @@ export default function LeaderDashboard() {
       if (!userId) return;
 
       try {
-        const res = await axios.get(`http://localhost:5000/analytics/team-compliance`, {
+        const res = await axios.get(`http://ambassador-tracking-backend-production.up.railway.app:5000/analytics/team-compliance`, {
           params: { leaderId: userId },
         });
         setTeam(res.data);

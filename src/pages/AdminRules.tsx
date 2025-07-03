@@ -17,7 +17,7 @@ export default function AdminRules() {
   useEffect(() => {
     const fetchRules = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/posting-rules');
+        const res = await axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/posting-rules');
         const rule = res.data[0]; // assuming one global rule
         setRules({
           stories: rule.stories_per_week,
@@ -36,7 +36,7 @@ export default function AdminRules() {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await axios.patch(`http://localhost:5000/posting-rules/${rules.id}`, {
+      await axios.patch(`http://ambassador-tracking-backend-production.up.railway.app:5000/posting-rules/${rules.id}`, {
         stories_per_week: rules.stories,
         posts_per_week: rules.posts,
         reels_per_week: rules.reels,

@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000', // Replace with your backend base URL
+  baseURL: 'http://ambassador-tracking-backend-production.up.railway.app:5000', // Replace with your backend base URL
 });
 
 // Automatically attach the token to all requests

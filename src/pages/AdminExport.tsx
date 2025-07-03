@@ -9,7 +9,7 @@ export default function AdminExport() {
   const handleExport = async () => {
     setDownloading(true);
     try {
-      const res = await axios.get('http://localhost:5000/feedback-forms', {
+      const res = await axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/feedback-forms', {
         responseType: 'json',
       });
 

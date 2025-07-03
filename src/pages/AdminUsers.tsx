@@ -60,7 +60,7 @@ const [teams, setTeams] = useState<{ id: string; name: string; members: string[]
   };
 
 const fetchTeams = async () => {
-const res = await axios.get('http://localhost:5000/admin/teams');
+const res = await axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/admin/teams');
   setTeams(
     res.data.map((t: any) => ({
       id: t.id,
