@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
 import {
@@ -61,7 +61,8 @@ export default function AdminDashboard() {
   const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const fetchAll = async () => {
+  // Use useCallback for fetchAll
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get('http://localhost:5000/analytics/all-compliance', {
@@ -77,9 +78,10 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
 
-  const fetchUsersAndTeams = async () => {
+  // Use useCallback for fetchUsersAndTeams
+  const fetchUsersAndTeams = useCallback(async () => {
     try {
       const [usersRes, teamsRes] = await Promise.all([
         axios.get('http://localhost:5000/admin/users'),
@@ -96,14 +98,15 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error('Error loading users or teams', err);
     }
-  };
+  }, []);
 
+  // Add both as dependencies
   useEffect(() => {
     fetchAll();
     fetchUsersAndTeams();
     const interval = setInterval(fetchAll, 60000); // Refresh every 60s
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchAll, fetchUsersAndTeams]);
 
   const filtered = ambassadors
     .filter((amb) => {
