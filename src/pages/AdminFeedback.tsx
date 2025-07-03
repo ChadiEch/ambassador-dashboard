@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Layout from '../components/Layout';
 import axios from 'axios';
 
@@ -9,7 +9,7 @@ interface NoteEntry {
   role: string;
   message: string;
   createdAt: string;
-  archived: boolean; // ✅ Add archived field
+  archived: boolean;
 }
 
 export default function AdminFeedback() {
@@ -19,7 +19,8 @@ export default function AdminFeedback() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
 
-  const fetchNotes = async () => {
+  // Use useCallback to stabilize fetchNotes
+  const fetchNotes = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get('http://localhost:5000/feedback-forms', {
@@ -31,13 +32,13 @@ export default function AdminFeedback() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, from, to]);
 
+  // Add fetchNotes as a dependency!
   useEffect(() => {
     fetchNotes();
-  }, []);
+  }, [fetchNotes]);
 
-  // ✅ Filter out archived notes
   const visibleNotes = notes.filter((note) => !note.archived);
 
   return (
