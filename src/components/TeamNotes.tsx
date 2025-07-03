@@ -13,7 +13,7 @@ export default function TeamNotes({ memberId, memberName }: TeamNotesProps) {
 
   const handleSubmit = async () => {
     try {
-      await axios.post('http://ambassador-tracking-backend-production.up.railway.app:5000/notes/team-leader', {
+      await axios.post('https://ambassador-tracking-backend-production.up.railway.app/notes/team-leader', {
         ambassadorId: memberId,
         message: note,
       });

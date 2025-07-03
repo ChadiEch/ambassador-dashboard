@@ -48,7 +48,7 @@ export default function AdminTeams() {
 
   const fetchTeams = async () => {
     try {
-      const res = await axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/admin/teams');
+      const res = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/admin/teams');
       const transformed = res.data.map((team: any) => ({
   id: team.id,
   name: team.name,
@@ -119,7 +119,7 @@ const fetchUsers = useCallback(async () => {
 
   const handleDelete = async (teamId: string) => {
     try {
-      await axios.delete(`http://ambassador-tracking-backend-production.up.railway.app:5000/admin/teams/${teamId}`);
+      await axios.delete(`https://ambassador-tracking-backend-production.up.railway.app/admin/teams/${teamId}`);
       fetchTeams();
     } catch (err) {
       console.error('Failed to delete team', err);

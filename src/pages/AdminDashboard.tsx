@@ -65,7 +65,7 @@ export default function AdminDashboard() {
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/analytics/all-compliance', {
+      const res = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/all-compliance', {
         params: {
           start: startDate || undefined,
           end: endDate || undefined,
@@ -84,8 +84,8 @@ export default function AdminDashboard() {
   const fetchUsersAndTeams = useCallback(async () => {
     try {
       const [usersRes, teamsRes] = await Promise.all([
-        axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/admin/users'),
-        axios.get('http://ambassador-tracking-backend-production.up.railway.app:5000/admin/teams'),
+        axios.get('https://ambassador-tracking-backend-production.up.railway.app/admin/users'),
+        axios.get('https://ambassador-tracking-backend-production.up.railway.app/admin/teams'),
       ]);
       setUsers(usersRes.data);
       setTeams(

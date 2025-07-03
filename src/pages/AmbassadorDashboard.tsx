@@ -42,7 +42,7 @@ export default function AmbassadorDashboard() {
       const from = fromDate.toISOString().split('T')[0];
 
       try {
-        const res = await axios.get(`http://ambassador-tracking-backend-production.up.railway.app:5000/analytics/weekly-compliance`, {
+        const res = await axios.get(`https://ambassador-tracking-backend-production.up.railway.app/analytics/weekly-compliance`, {
           params: { userId, from, to },
         });
         setData(res.data);
