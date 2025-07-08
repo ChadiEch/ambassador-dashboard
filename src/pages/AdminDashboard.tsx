@@ -62,23 +62,40 @@ export default function AdminDashboard() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Use useCallback for fetchAll
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/all-compliance', {
-        params: {
-          start: startDate || undefined,
-          end: endDate || undefined,
-        },
-      });
-      setAmbassadors(res.data);
-      setLastUpdate(new Date().toLocaleTimeString());
-    } catch (err) {
-      console.error('Error fetching ambassador data:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [startDate, endDate]);
+const fetchAll = useCallback(async () => {
+  setLoading(true);
+  try {
+    const res = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/all-compliance', {
+      params: {
+        start: startDate || undefined,
+        end: endDate || undefined,
+      },
+    });
+
+    // Normalize to always have plural keys
+    const normalized = res.data.map((amb: any) => ({
+      ...amb,
+      actual: {
+        stories: amb.actual.stories ?? amb.actual.story ?? 0,
+        posts: amb.actual.posts ?? amb.actual.post ?? 0,
+        reels: amb.actual.reels ?? amb.actual.reel ?? 0,
+      },
+      expected: {
+        stories: amb.expected.stories ?? amb.expected.story ?? 0,
+        posts: amb.expected.posts ?? amb.expected.post ?? 0,
+        reels: amb.expected.reels ?? amb.expected.reel ?? 0,
+      },
+    }));
+
+    setAmbassadors(normalized);
+    setLastUpdate(new Date().toLocaleTimeString());
+  } catch (err) {
+    console.error('Error fetching ambassador data:', err);
+  } finally {
+    setLoading(false);
+  }
+}, [startDate, endDate]);
+
 
   // Use useCallback for fetchUsersAndTeams
   const fetchUsersAndTeams = useCallback(async () => {
