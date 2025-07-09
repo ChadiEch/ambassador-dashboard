@@ -121,7 +121,7 @@ const fetchAll = useCallback(async () => {
   useEffect(() => {
     fetchAll();
     fetchUsersAndTeams();
-    const interval = setInterval(fetchAll, 60000); // Refresh every 60s
+    const interval = setInterval(fetchAll, 180000); // Refresh every 60s
     return () => clearInterval(interval);
   }, [fetchAll, fetchUsersAndTeams]);
 
