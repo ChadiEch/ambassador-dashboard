@@ -42,9 +42,10 @@ export default function Layout({ children }: LayoutProps) {
         <div className="text-indigo-600 font-bold text-xl">{role.charAt(0).toUpperCase() + role.slice(1)}</div>
         <button onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? (
-            <Bars3Icon  className="w-6 h-6 text-gray-700" />
-          ) : (
             <XMarkIcon  className="w-6 h-6 text-gray-700" />
+            
+          ) : (
+            <Bars3Icon  className="w-6 h-6 text-gray-700" />
           )}
         </button>
       </div>

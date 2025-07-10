@@ -170,22 +170,22 @@ const fetchAll = useCallback(async () => {
     <Layout>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold">Ambassador Weekly Overview</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap gap-3 items-center w-full">
           <input
             type="date"
-            className="border rounded px-2 py-1 text-sm"
+            className="border rounded px-2 py-1 text-sm w-full sm:w-auto"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
           <input
             type="date"
-            className="border rounded px-2 py-1 text-sm"
+            className="border rounded px-2 py-1 text-sm w-full sm:w-auto"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
           <button
             onClick={fetchAll}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm w-full sm:w-auto"
           >
             Refresh
           </button>
