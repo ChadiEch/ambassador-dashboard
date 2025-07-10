@@ -23,7 +23,6 @@ export default function Layout({ children }: LayoutProps) {
   if (role === 'admin') {
     navItems.push(
       { label: 'Feedback & Notes', path: '/admin/feedback' },
-      { label: 'Export Notes (CSV)', path: '/admin/export' },
       { label: 'Moderation Panel', path: '/admin/moderation' },
       { label: 'User Management', path: '/admin/users' },
       { label: 'Team Management', path: '/admin/teams' },
