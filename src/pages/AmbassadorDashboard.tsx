@@ -26,40 +26,73 @@ export default function AmbassadorDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [startDate, setStartDate] = useState(() => {
+    const today = new Date();
+    const fromDate = new Date(today);
+    fromDate.setDate(today.getDate() - 6);
+    return fromDate.toISOString().split('T')[0];
+  });
+
+  const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [lastUpdate, setLastUpdate] = useState<string>('');
+
+  const fetchData = async () => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      setError('No user ID found in localStorage.');
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await axios.get(
+        'https://ambassador-tracking-backend-production.up.railway.app/analytics/weekly-compliance',
+        {
+          params: { userId, from: startDate, to: endDate },
+        }
+      );
+      setData(res.data);
+      setLastUpdate(new Date().toLocaleTimeString());
+    } catch (err) {
+      console.error('Error fetching compliance:', err);
+      setError('Failed to fetch compliance data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        setError('No user ID found in localStorage.');
-        setLoading(false);
-        return;
-      }
-
-      const today = new Date();
-      const to = today.toISOString().split('T')[0];
-      const fromDate = new Date(today);
-      fromDate.setDate(fromDate.getDate() - 6);
-      const from = fromDate.toISOString().split('T')[0];
-
-      try {
-        const res = await axios.get(`https://ambassador-tracking-backend-production.up.railway.app/analytics/weekly-compliance`, {
-          params: { userId, from, to },
-        });
-        setData(res.data);
-      } catch (err) {
-        console.error('Error fetching compliance:', err);
-        setError('Failed to fetch compliance data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [startDate, endDate]);
 
   return (
     <Layout>
       <h2 className="text-2xl font-semibold mb-4">Weekly Activity Summary</h2>
+
+      <div className="flex flex-wrap gap-3 items-center mb-4">
+        <input
+          type="date"
+          className="border px-3 py-1 rounded text-sm"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <input
+          type="date"
+          className="border px-3 py-1 rounded text-sm"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+        <button
+          onClick={fetchData}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm"
+        >
+          Refresh
+        </button>
+        <p className="text-sm text-gray-500">Last updated: {lastUpdate}</p>
+      </div>
 
       {loading ? (
         <p>Loading...</p>
@@ -88,7 +121,6 @@ export default function AmbassadorDashboard() {
         <p className="text-red-500">No compliance data available.</p>
       )}
 
-      {/* Feedback Section */}
       <div className="mt-8">
         <h3 className="text-lg font-semibold mb-2">Give Feedback</h3>
         <FeedbackForm />
