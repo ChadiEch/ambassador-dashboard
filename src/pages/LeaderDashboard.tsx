@@ -43,39 +43,38 @@ export default function LeaderDashboard() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-const [startDate, setStartDate] = useState('');
-const [endDate, setEndDate] = useState('');
-const [lastUpdate, setLastUpdate] = useState<string>('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [lastUpdate, setLastUpdate] = useState<string>('');
 
   const userId = localStorage.getItem('userId');
 
-useEffect(() => {
-  const fetchTeam = async () => {
-    if (!userId) return;
+  useEffect(() => {
+    const fetchTeam = async () => {
+      if (!userId) return;
 
-    try {
-      const res = await axios.get(
-        `https://ambassador-tracking-backend-production.up.railway.app/analytics/team-compliance`,
-        {
-          params: {
-            leaderId: userId,
-            start: startDate || undefined,
-            end: endDate || undefined,
-          },
-        }
-      );
-      setTeam(res.data);
-      setLastUpdate(new Date().toLocaleTimeString());
-    } catch (err) {
-      console.error('❌ Error fetching team data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        const res = await axios.get(
+          `https://ambassador-tracking-backend-production.up.railway.app/analytics/team-compliance`,
+          {
+            params: {
+              leaderId: userId,
+              start: startDate || undefined,
+              end: endDate || undefined,
+            },
+          }
+        );
+        setTeam(res.data);
+        setLastUpdate(new Date().toLocaleTimeString());
+      } catch (err) {
+        console.error('❌ Error fetching team data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchTeam();
-}, [userId, startDate, endDate]);
-
+    fetchTeam();
+  }, [userId, startDate, endDate]);
 
   const filteredTeam = team
     .filter((member) => {
@@ -119,31 +118,31 @@ useEffect(() => {
 
   return (
     <Layout>
-      <h2 className="text-2xl font-bold mb-6">My Team's Weekly Summary</h2>
-<div className="flex items-center justify-between mb-4">
-  <h2 className="text-2xl font-bold">My Team's Weekly Summary</h2>
-  <div className="flex flex-wrap gap-3 items-center w-full">
-    <input
-      type="date"
-      className="border rounded px-2 py-1 text-sm w-full sm:w-auto"
-      value={startDate}
-      onChange={(e) => setStartDate(e.target.value)}
-    />
-    <input
-      type="date"
-      className="border rounded px-2 py-1 text-sm w-full sm:w-auto"
-      value={endDate}
-      onChange={(e) => setEndDate(e.target.value)}
-    />
-    <button
-      onClick={() => setLoading(true)} // Triggers useEffect re-fetch
-      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm w-full sm:w-auto"
-    >
-      Refresh
-    </button>
-  </div>
-</div>
-<p className="text-sm text-gray-500 mb-4">Last updated: {lastUpdate}</p>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold">My Team's Weekly Summary</h2>
+        <div className="flex flex-wrap gap-3 items-center w-full">
+          <input
+            type="date"
+            className="border rounded px-2 py-1 text-sm w-full sm:w-auto"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <input
+            type="date"
+            className="border rounded px-2 py-1 text-sm w-full sm:w-auto"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+          <button
+            onClick={() => setLoading(true)} // triggers refetch by useEffect
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm w-full sm:w-auto"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <p className="text-sm text-gray-500 mb-4">Last updated: {lastUpdate}</p>
 
       <div className="flex flex-wrap gap-3 mb-6">
         <input
@@ -198,18 +197,26 @@ useEffect(() => {
             <div key={member.id} className="bg-white p-4 rounded-xl shadow-md">
               <h3 className="font-semibold text-lg mb-2">{member.name}</h3>
               <div className="flex gap-2 mb-3">
-                {['story', 'post', 'reel'].map((type) => (
-                  <span
-                    key={type}
-                    className={`text-xs px-3 py-1 rounded-full text-white font-medium ${
-                      member.compliance[type as keyof TeamMemberSummary['compliance']] === 'green'
-                        ? 'bg-green-500'
-                        : 'bg-red-500'
-                    }`}
-                  >
-                    {type.toUpperCase()} ✓
-                  </span>
-                ))}
+                {(['story', 'post', 'reel'] as const).map((type) => {
+                  const compliance = member.compliance[type];
+                  const expected = member.expected[
+                    type === 'story' ? 'stories' : type === 'post' ? 'posts' : 'reels'
+                  ];
+                  const color =
+                    expected === 0
+                      ? 'bg-yellow-500'
+                      : compliance === 'green'
+                      ? 'bg-green-500'
+                      : 'bg-red-500';
+                  return (
+                    <span
+                      key={type}
+                      className={`text-xs px-3 py-1 rounded-full text-white font-medium ${color}`}
+                    >
+                      {type.toUpperCase()} ✓
+                    </span>
+                  );
+                })}
               </div>
               <ResponsiveContainer width="100%" height={150}>
                 <BarChart

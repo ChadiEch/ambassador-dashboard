@@ -259,18 +259,33 @@ const fetchAll = useCallback(async () => {
             <div key={amb.id} className="bg-white p-4 rounded-xl shadow-md">
               <h3 className="font-semibold text-lg mb-3">{amb.name}</h3>
               <div className="flex gap-2 mb-4">
-                {['story', 'post', 'reel'].map((type) => (
-                  <span
-                    key={type}
-                    className={`text-xs px-3 py-1 rounded-full text-white font-medium ${
-                      amb.compliance[type as keyof AmbassadorSummary['compliance']] === 'green'
-                        ? 'bg-green-500'
-                        : 'bg-red-500'
-                    }`}
-                  >
-                    {type.toUpperCase()} ✓
-                  </span>
-                ))}
+               {(['story', 'post', 'reel'] as const).map((type) => {
+  const expected =
+    type === 'story'
+      ? amb.expected.stories
+      : type === 'post'
+      ? amb.expected.posts
+      : amb.expected.reels;
+
+  const isGreen = amb.compliance[type] === 'green';
+  const isZeroRule = expected === 0;
+
+  const bgColor = isZeroRule
+    ? 'bg-yellow-500'
+    : isGreen
+    ? 'bg-green-500'
+    : 'bg-red-500';
+
+  return (
+    <span
+      key={type}
+      className={`text-xs px-3 py-1 rounded-full text-white font-medium ${bgColor}`}
+    >
+      {type.toUpperCase()} ✓
+    </span>
+  );
+})}
+
               </div>
               <ResponsiveContainer width="100%" height={150}>
                 <BarChart
