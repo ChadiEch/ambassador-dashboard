@@ -102,16 +102,24 @@ export default function AmbassadorDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {(['stories', 'posts', 'reels'] as const).map((type) => {
             const complianceKey = type === 'stories' ? 'story' : type === 'posts' ? 'post' : 'reel';
+            const expected = data.expected[type];
+            const actual = data.actual[type];
+            const isGreen = data.compliance[complianceKey] === 'green';
+            const isZeroRequirement = expected === 0;
+            const bgColor = isZeroRequirement
+              ? 'bg-yellow-500'
+              : isGreen
+              ? 'bg-green-500'
+              : 'bg-red-500';
+
             return (
               <div
                 key={type}
-                className={`p-6 rounded-xl shadow-md text-white ${
-                  data.compliance[complianceKey] === 'green' ? 'bg-green-500' : 'bg-red-500'
-                }`}
+                className={`p-6 rounded-xl shadow-md text-white ${bgColor}`}
               >
                 <h3 className="text-xl font-bold capitalize">{type}</h3>
                 <p className="text-sm">
-                  {data.actual[type]} of {data.expected[type]} required
+                  {actual} of {expected} required
                 </p>
               </div>
             );
