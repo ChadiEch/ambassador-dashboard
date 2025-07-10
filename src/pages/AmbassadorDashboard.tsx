@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Layout from '../components/Layout';
 import axios from 'axios';
 import FeedbackForm from '../components/FeedbackForm';
@@ -36,7 +36,7 @@ export default function AmbassadorDashboard() {
   const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [lastUpdate, setLastUpdate] = useState<string>('');
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const userId = localStorage.getItem('userId');
     if (!userId) {
       setError('No user ID found in localStorage.');
@@ -62,11 +62,11 @@ export default function AmbassadorDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startDate, endDate]);
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate]);
+  }, [fetchData]);
 
   return (
     <Layout>
