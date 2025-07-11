@@ -297,14 +297,13 @@ const matchesTeam =
                   return (
                     <>
                       {user1?.photoUrl && (
-                        <div className="flex justify-center mb-3">
                           <img
                             src={user.photoUrl}
                             alt={`${user.name} profile`}
                             className="w-24 h-24 object-cover rounded-full cursor-pointer border hover:scale-105 transition"
                             onClick={() => window.open(user1.photoUrl, '_blank')}
                           />
-                        </div>
+                        
                       )}
                     </>
                   );
