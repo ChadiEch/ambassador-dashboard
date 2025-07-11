@@ -63,7 +63,15 @@ export default function LeaderDashboard() {
             },
           }
         );
-        setTeam(res.data);
+
+        // ✅ Map photoUrl from the backend (fallbacks included)
+        setTeam(
+          res.data.map((member: any) => ({
+            ...member,
+            photoUrl: member.photoUrl ?? member.photo_url ?? member.profileImage ?? '',
+          }))
+        );
+
         setLastUpdate(new Date().toLocaleTimeString());
       } catch (err) {
         console.error('❌ Error fetching team data:', err);
@@ -167,76 +175,75 @@ export default function LeaderDashboard() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTeam.map((member) => (
-     <div key={member.id} className="bg-white p-4 rounded-xl shadow-md">
-  <div className="flex items-center mb-4 gap-3">
-    {member.photoUrl && (
-      <img
-        src={member.photoUrl}
-        alt={`${member.name} profile`}
-        onClick={() => window.open(member.photoUrl, '_blank')}
-        className="w-16 h-16 object-cover rounded-full border shadow cursor-pointer hover:scale-105 transition duration-150"
-      />
-    )}
-    <h3 className="font-semibold text-lg">{member.name}</h3>
-  </div>
+            <div key={member.id} className="bg-white p-4 rounded-xl shadow-md">
+              <div className="flex items-center mb-4 gap-3">
+                {member.photoUrl && (
+                  <img
+                    src={member.photoUrl}
+                    alt={`${member.name} profile`}
+                    onClick={() => window.open(member.photoUrl, '_blank')}
+                    className="w-16 h-16 object-cover rounded-full border shadow cursor-pointer hover:scale-105 transition duration-150"
+                  />
+                )}
+                <h3 className="font-semibold text-lg">{member.name}</h3>
+              </div>
 
-  <div className="flex gap-2 mb-3">
-    {(['story', 'post', 'reel'] as const).map((type) => {
-      const compliance = member.compliance[type];
-      const expected = member.expected[
-        type === 'story' ? 'stories' : type === 'post' ? 'posts' : 'reels'
-      ];
-      const color =
-        expected === 0
-          ? 'bg-yellow-500'
-          : compliance === 'green'
-          ? 'bg-green-500'
-          : 'bg-red-500';
-      return (
-        <span
-          key={type}
-          className={`text-xs px-3 py-1 rounded-full text-white font-medium ${color}`}
-        >
-          {type.toUpperCase()} ✓
-        </span>
-      );
-    })}
-  </div>
+              <div className="flex gap-2 mb-3">
+                {(['story', 'post', 'reel'] as const).map((type) => {
+                  const compliance = member.compliance[type];
+                  const expected = member.expected[
+                    type === 'story' ? 'stories' : type === 'post' ? 'posts' : 'reels'
+                  ];
+                  const color =
+                    expected === 0
+                      ? 'bg-yellow-500'
+                      : compliance === 'green'
+                      ? 'bg-green-500'
+                      : 'bg-red-500';
+                  return (
+                    <span
+                      key={type}
+                      className={`text-xs px-3 py-1 rounded-full text-white font-medium ${color}`}
+                    >
+                      {type.toUpperCase()} ✓
+                    </span>
+                  );
+                })}
+              </div>
 
-  <ResponsiveContainer width="100%" height={150}>
-    <BarChart
-      layout="vertical"
-      data={[
-        {
-          type: 'Stories',
-          actual: member.actual.stories,
-          expected: member.expected.stories,
-        },
-        {
-          type: 'Posts',
-          actual: member.actual.posts,
-          expected: member.expected.posts,
-        },
-        {
-          type: 'Reels',
-          actual: member.actual.reels,
-          expected: member.expected.reels,
-        },
-      ]}
-      margin={{ top: 10, right: 10, bottom: 10, left: 0 }}
-    >
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis type="number" />
-      <YAxis dataKey="type" type="category" />
-      <Tooltip />
-      <Bar dataKey="expected" fill="#d1d5db" name="Expected" />
-      <Bar dataKey="actual" fill="#4ade80" name="Actual" />
-    </BarChart>
-  </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height={150}>
+                <BarChart
+                  layout="vertical"
+                  data={[
+                    {
+                      type: 'Stories',
+                      actual: member.actual.stories,
+                      expected: member.expected.stories,
+                    },
+                    {
+                      type: 'Posts',
+                      actual: member.actual.posts,
+                      expected: member.expected.posts,
+                    },
+                    {
+                      type: 'Reels',
+                      actual: member.actual.reels,
+                      expected: member.expected.reels,
+                    },
+                  ]}
+                  margin={{ top: 10, right: 10, bottom: 10, left: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="type" type="category" />
+                  <Tooltip />
+                  <Bar dataKey="expected" fill="#d1d5db" name="Expected" />
+                  <Bar dataKey="actual" fill="#4ade80" name="Actual" />
+                </BarChart>
+              </ResponsiveContainer>
 
-  <TeamNotes memberId={member.id} memberName={member.name} />
-</div>
-
+              <TeamNotes memberId={member.id} memberName={member.name} />
+            </div>
           ))}
         </div>
       )}
