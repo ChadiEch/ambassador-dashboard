@@ -65,12 +65,13 @@ export default function LeaderDashboard() {
         );
 
         // ✅ Map photoUrl from the backend (fallbacks included)
-        setTeam(
-          res.data.map((member: any) => ({
-            ...member,
-            photoUrl: member.photoUrl ?? member.photo_url ?? member.profileImage ?? '',
-          }))
-        );
+setTeam(
+  res.data.map((member: any) => ({
+    ...member,
+    photoUrl: member.photoUrl ?? member.photo_url ?? member.profileImage ?? '',
+  }))
+);
+
 
         setLastUpdate(new Date().toLocaleTimeString());
       } catch (err) {
@@ -177,14 +178,15 @@ export default function LeaderDashboard() {
           {filteredTeam.map((member) => (
             <div key={member.id} className="bg-white p-4 rounded-xl shadow-md">
               <div className="flex items-center mb-4 gap-3">
-                {member.photoUrl && (
-                  <img
-                    src={member.photoUrl}
-                    alt={`${member.name} profile`}
-                    onClick={() => window.open(member.photoUrl, '_blank')}
-                    className="w-16 h-16 object-cover rounded-full border shadow cursor-pointer hover:scale-105 transition duration-150"
-                  />
-                )}
+{member.photoUrl && (
+  <img
+    src={member.photoUrl}
+    alt={`${member.name} profile`}
+    onClick={() => window.open(member.photoUrl, '_blank')}
+    className="w-16 h-16 object-cover rounded-full border shadow cursor-pointer hover:scale-105 transition duration-150"
+  />
+)}
+
                 <h3 className="font-semibold text-lg">{member.name}</h3>
               </div>
 
