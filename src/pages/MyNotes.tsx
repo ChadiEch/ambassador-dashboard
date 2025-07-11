@@ -4,15 +4,13 @@ import Layout from '../components/Layout';
 
 interface Note {
   id: string;
-  userName: string;
-  role: string;
   content: string;
-   author: {
+  created_at: string;
+  author: {
     name: string;
   };
-  createdAt: string;
-  archived: boolean;
 }
+
 
 export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -50,9 +48,11 @@ export default function NotesPage() {
     <p className="text-sm text-gray-600">
       From: <strong>{note.author?.name || 'Unknown'}</strong>
     </p>
-    <p className="text-xs text-gray-500">
-      {new Date(note.createdAt).toLocaleString()}
-    </p>
+<p className="text-xs text-gray-500">
+  {note.created_at ? new Date(note.created_at).toLocaleString() : 'Unknown date'}
+</p>
+
+
     <p className="mt-2">{note.content}</p>
   </div>
 ))}
