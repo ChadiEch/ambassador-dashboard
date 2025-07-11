@@ -306,7 +306,6 @@ const matchesTeam =
                           />
                         </div>
                       )}
-                      <h3 className="font-semibold text-lg mb-3 text-center">{user.name}</h3>
                     </>
                   );
                 })()}
