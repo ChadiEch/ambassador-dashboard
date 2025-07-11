@@ -33,6 +33,7 @@ const [teams, setTeams] = useState<{ id: string; name: string; members: string[]
   const [roleFilter, setRoleFilter] = useState<'all' | 'ambassador' | 'leader'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
+const [modalImage, setModalImage] = useState<string | null>(null);
 
   const [newUser, setNewUser] = useState<Omit<User, 'id' | 'active'>>({
     name: '',
@@ -297,13 +298,12 @@ const matchesTeam =
                   return (
                     <>
                       {user1?.photoUrl && (
-                          <img
-                            src={user.photoUrl}
-                            alt={`${user.name} profile`}
-                            className="w-24 h-24 object-cover rounded-full cursor-pointer border hover:scale-105 transition"
-                            onClick={() => window.open(user1.photoUrl, '_blank')}
-                          />
-                        
+                        <img
+                          src={user.photoUrl}
+                          alt={`${user.name} profile`}
+                          className="w-24 h-24 object-cover cursor-pointer border hover:scale-105 transition"
+                          onClick={() => setModalImage(user.photoUrl || '')}
+                        />
                       )}
                     </>
                   );
@@ -336,6 +336,29 @@ const matchesTeam =
           ))}
         </div>
       )}
+              {modalImage && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+            onClick={() => setModalImage(null)}
+          >
+            <div
+              className="bg-white p-4 rounded shadow max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={modalImage}
+                alt="Full Size"
+                className="w-full h-auto object-contain max-h-[80vh] rounded"
+              />
+              <button
+                className="mt-4 w-full bg-red-600 text-white py-2 rounded hover:bg-red-700"
+                onClick={() => setModalImage(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
     </Layout>
   );
 }
