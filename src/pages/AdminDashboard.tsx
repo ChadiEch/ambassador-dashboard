@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
+import TeamNotes from '../components/TeamNotes';
+
 import {
   BarChart,
   Bar,
@@ -316,6 +318,7 @@ export default function AdminDashboard() {
                   <Bar dataKey="actual" fill="#4ade80" name="Actual" />
                 </BarChart>
               </ResponsiveContainer>
+                <TeamNotes memberId={amb.id} memberName={amb.name} />
             </div>
           ))}
         </div>
