@@ -11,7 +11,8 @@ import AdminExport from './pages/AdminExport';
 import AdminUsers from './pages/AdminUsers';
 import AdminTeams from './pages/AdminTeams';
 import AdminRules from './pages/AdminRules';
-import Rules from './pages/Rules';
+import Rules from './pages/Rules';    
+import NotesPage from './pages/MyNotes';
 
 function App() {
   return (
@@ -80,6 +81,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+  path="/MyNotes"
+  element={
+    <ProtectedRoute allowedRoles={['ambassador', 'leader']}>
+      <NotesPage />
+    </ProtectedRoute>
+  }
+/>
+
         <Route
           path="/ambassador"
           element={
