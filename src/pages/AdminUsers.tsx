@@ -292,15 +292,25 @@ const matchesTeam =
                 </>
               ) : (
                 <div className="flex justify-between items-start gap-6">
-                   <div className="flex gap-4">
-                    {user.photoUrl && (
-                      <img
-                        src={user.photoUrl}
-                        alt={`${user.name}'s profile`}
-                        className="w-16 h-16 rounded-full object-cover border"
-                      />
-                    )}
-                    </div>
+                {(() => {
+                  const user1 = users.find((u) => u.id === user.id);
+                  return (
+                    <>
+                      {user1?.photoUrl && (
+                        <div className="flex justify-center mb-3">
+                          <img
+                            src={user.photoUrl}
+                            alt={`${user.name} profile`}
+                            className="w-24 h-24 object-cover rounded-full cursor-pointer border hover:scale-105 transition"
+                            onClick={() => window.open(user1.photoUrl, '_blank')}
+                          />
+                        </div>
+                      )}
+                      <h3 className="font-semibold text-lg mb-3 text-center">{user.name}</h3>
+                    </>
+                  );
+                })()}
+
                   <div>
                     <p className="font-semibold text-gray-800">{user.name}</p>
                     <p className="text-sm text-gray-500">Username: {user.username}</p>
