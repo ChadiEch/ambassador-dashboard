@@ -33,6 +33,7 @@ interface TeamMemberSummary {
   };
   role?: 'ambassador' | 'leader';
   active?: boolean;
+  photoUrl?: string;
 }
 
 export default function LeaderDashboard() {
@@ -167,6 +168,17 @@ export default function LeaderDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTeam.map((member) => (
             <div key={member.id} className="bg-white p-4 rounded-xl shadow-md">
+              {member.photoUrl && (
+                <div className="flex justify-center mb-2">
+                  <img
+                    src={member.photoUrl}
+                    alt={`${member.name} profile`}
+                    onClick={() => window.open(member.photoUrl, '_blank')}
+                    className="w-24 h-24 object-cover rounded border shadow cursor-pointer hover:scale-105 transition duration-150"
+                  />
+                </div>
+              )}
+
               <h3 className="font-semibold text-lg mb-2">{member.name}</h3>
               <div className="flex gap-2 mb-3">
                 {(['story', 'post', 'reel'] as const).map((type) => {
