@@ -39,8 +39,8 @@ export default function LeaderDashboard() {
   const [team, setTeam] = useState<TeamMemberSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('activity');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [lastUpdate, setLastUpdate] = useState<string>('');

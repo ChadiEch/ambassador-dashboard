@@ -58,8 +58,8 @@ export default function AdminDashboard() {
   const [roleFilter, setRoleFilter] = useState<'all' | 'ambassador' | 'leader'>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
 
-  const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('activity');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
