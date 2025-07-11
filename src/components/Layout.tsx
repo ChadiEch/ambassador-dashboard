@@ -26,7 +26,8 @@ export default function Layout({ children }: LayoutProps) {
       { label: 'Moderation Panel', path: '/admin/moderation' },
       { label: 'User Management', path: '/admin/users' },
       { label: 'Team Management', path: '/admin/teams' },
-      { label: 'Rules Management', path: '/admin/rules' }
+      { label: 'Rules Management', path: '/admin/rules' },
+      { label: 'Leaved Ambassadors', path: '/admin/inactive-users' }
     );
   }
 

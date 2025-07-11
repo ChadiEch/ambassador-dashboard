@@ -13,7 +13,7 @@ import AdminTeams from './pages/AdminTeams';
 import AdminRules from './pages/AdminRules';
 import Rules from './pages/Rules';    
 import NotesPage from './pages/MyNotes';
-
+import InactiveUsers from './pages/InactiveUsers';
 function App() {
   return (
     <Router>
@@ -31,6 +31,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+          <Route path="/admin/inactive-users" 
+          element={
+           <ProtectedRoute allowedRoles={['admin']}>
+          <InactiveUsers />
+          </ProtectedRoute>
+          }
+           />
+
         <Route
           path="/admin/feedback"
           element={
