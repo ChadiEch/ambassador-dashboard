@@ -21,7 +21,9 @@ interface User {
   note?: string;
   role: 'ambassador' | 'leader';
   active: boolean;
+  photoUrl?: string; // ✅ Add this
 }
+
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
@@ -223,6 +225,12 @@ const matchesTeam =
             onChange={(e) => setNewUser({ ...newUser, note: e.target.value })}
             className="border px-3 py-1 rounded" />
 
+           <input
+               placeholder="Photo URL"
+               value={newUser.photoUrl || ''}
+               onChange={(e) => setNewUser({ ...newUser, photoUrl: e.target.value })}
+               className="border px-3 py-1 rounded" />
+
           <button onClick={handleCreate}
             className="bg-indigo-600 text-white px-4 py-1 rounded hover:bg-indigo-700">
             Add
@@ -269,6 +277,14 @@ const matchesTeam =
                     onChange={(e) => setEditState({ ...editState, note: e.target.value })}
                     className="border px-3 py-1 rounded w-full mb-2" />
 
+                  <input
+                      placeholder="Photo URL"
+                      value={editState.photoUrl || ''}
+                      onChange={(e) => setEditState({ ...editState, photoUrl: e.target.value })}
+                      className="border px-3 py-1 rounded w-full mb-2"
+                    />
+
+
                   <div className="flex gap-2">
                     <button onClick={handleUpdate} className="bg-green-600 text-white px-4 py-1 rounded">Save</button>
                     <button onClick={() => setEditingUserId(null)} className="bg-gray-400 text-white px-4 py-1 rounded">Cancel</button>
@@ -276,6 +292,15 @@ const matchesTeam =
                 </>
               ) : (
                 <div className="flex justify-between items-start gap-6">
+                   <div className="flex gap-4">
+                    {user.photoUrl && (
+                      <img
+                        src={user.photoUrl}
+                        alt={`${user.name}'s profile`}
+                        className="w-16 h-16 rounded-full object-cover border"
+                      />
+                    )}
+                    </div>
                   <div>
                     <p className="font-semibold text-gray-800">{user.name}</p>
                     <p className="text-sm text-gray-500">Username: {user.username}</p>
