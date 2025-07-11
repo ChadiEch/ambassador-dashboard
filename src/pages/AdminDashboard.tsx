@@ -247,78 +247,82 @@ export default function AdminDashboard() {
             const user = users.find((u) => u.id === amb.id);
 
             return (
-              <div key={amb.id} className="bg-white p-4 rounded-xl shadow-md">
-                {user?.photoUrl && (
-                  <div className="flex justify-center mb-2">
-                    <img
-                      src={user.photoUrl}
-                      alt={`${amb.name} profile`}
-                      onClick={() => window.open(user.photoUrl, '_blank')}
-                      className="w-24 h-24 object-cover rounded border shadow cursor-pointer hover:scale-105 transition duration-150"
-                    />
-                  </div>
-                )}
-                <h3 className="font-semibold text-lg mb-3">{amb.name}</h3>
-                <div className="flex gap-2 mb-4">
-                  {(['story', 'post', 'reel'] as const).map((type) => {
-                    const expected =
-                      type === 'story'
-                        ? amb.expected.stories
-                        : type === 'post'
-                        ? amb.expected.posts
-                        : amb.expected.reels;
+<div key={amb.id} className="bg-white p-4 rounded-xl shadow-md">
+  <div className="flex items-center mb-4 gap-3">
+    {user?.photoUrl && (
+      <img
+        src={user.photoUrl}
+        alt={`${amb.name} profile`}
+        onClick={() => window.open(user.photoUrl, '_blank')}
+        className="w-16 h-16 object-cover rounded-full border shadow cursor-pointer hover:scale-105 transition duration-150"
+      />
+    )}
+    <h3 className="font-semibold text-lg">{amb.name}</h3>
+  </div>
 
-                    const isGreen = amb.compliance[type] === 'green';
-                    const isZeroRule = expected === 0;
+  <div className="flex gap-2 mb-4">
+    {(['story', 'post', 'reel'] as const).map((type) => {
+      const expected =
+        type === 'story'
+          ? amb.expected.stories
+          : type === 'post'
+          ? amb.expected.posts
+          : amb.expected.reels;
 
-                    const bgColor = isZeroRule
-                      ? 'bg-yellow-500'
-                      : isGreen
-                      ? 'bg-green-500'
-                      : 'bg-red-500';
+      const isGreen = amb.compliance[type] === 'green';
+      const isZeroRule = expected === 0;
 
-                    return (
-                      <span
-                        key={type}
-                        className={`text-xs px-3 py-1 rounded-full text-white font-medium ${bgColor}`}
-                      >
-                        {type.toUpperCase()} ✓
-                      </span>
-                    );
-                  })}
-                </div>
-                <ResponsiveContainer width="100%" height={150}>
-                  <BarChart
-                    layout="vertical"
-                    data={[
-                      {
-                        type: 'Stories',
-                        actual: amb.actual.stories,
-                        expected: amb.expected.stories,
-                      },
-                      {
-                        type: 'Posts',
-                        actual: amb.actual.posts,
-                        expected: amb.expected.posts,
-                      },
-                      {
-                        type: 'Reels',
-                        actual: amb.actual.reels,
-                        expected: amb.expected.reels,
-                      },
-                    ]}
-                    margin={{ top: 10, right: 10, bottom: 10, left: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="type" type="category" />
-                    <Tooltip />
-                    <Bar dataKey="expected" fill="#d1d5db" name="Expected" />
-                    <Bar dataKey="actual" fill="#4ade80" name="Actual" />
-                  </BarChart>
-                </ResponsiveContainer>
-                <TeamNotes memberId={amb.id} memberName={amb.name} />
-              </div>
+      const bgColor = isZeroRule
+        ? 'bg-yellow-500'
+        : isGreen
+        ? 'bg-green-500'
+        : 'bg-red-500';
+
+      return (
+        <span
+          key={type}
+          className={`text-xs px-3 py-1 rounded-full text-white font-medium ${bgColor}`}
+        >
+          {type.toUpperCase()} ✓
+        </span>
+      );
+    })}
+  </div>
+
+  <ResponsiveContainer width="100%" height={150}>
+    <BarChart
+      layout="vertical"
+      data={[
+        {
+          type: 'Stories',
+          actual: amb.actual.stories,
+          expected: amb.expected.stories,
+        },
+        {
+          type: 'Posts',
+          actual: amb.actual.posts,
+          expected: amb.expected.posts,
+        },
+        {
+          type: 'Reels',
+          actual: amb.actual.reels,
+          expected: amb.expected.reels,
+        },
+      ]}
+      margin={{ top: 10, right: 10, bottom: 10, left: 0 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis type="number" />
+      <YAxis dataKey="type" type="category" />
+      <Tooltip />
+      <Bar dataKey="expected" fill="#d1d5db" name="Expected" />
+      <Bar dataKey="actual" fill="#4ade80" name="Actual" />
+    </BarChart>
+  </ResponsiveContainer>
+
+  <TeamNotes memberId={amb.id} memberName={amb.name} />
+</div>
+
             );
           })}
         </div>
