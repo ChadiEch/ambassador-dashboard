@@ -39,8 +39,6 @@ export default function LeaderDashboard() {
   const [team, setTeam] = useState<TeamMemberSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'ambassador' | 'leader'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [startDate, setStartDate] = useState('');
@@ -79,16 +77,8 @@ export default function LeaderDashboard() {
   const filteredTeam = team
     .filter((member) => {
       const matchesSearch = member.name.toLowerCase().includes(search.toLowerCase());
-      const memberRole = member.role || 'ambassador';
       const isActive = member.active !== false;
-
-      const matchesRole = roleFilter === 'all' || memberRole === roleFilter;
-      const matchesStatus =
-        statusFilter === 'all' ||
-        (statusFilter === 'active' && isActive) ||
-        (statusFilter === 'inactive' && !isActive);
-
-      return matchesSearch && matchesRole && matchesStatus;
+      return matchesSearch && isActive;
     })
     .sort((a, b) => {
       let aVal: string | number = '';
@@ -134,7 +124,7 @@ export default function LeaderDashboard() {
             onChange={(e) => setEndDate(e.target.value)}
           />
           <button
-            onClick={() => setLoading(true)} // triggers refetch by useEffect
+            onClick={() => setLoading(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm w-full sm:w-auto"
           >
             Refresh
@@ -152,24 +142,6 @@ export default function LeaderDashboard() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value as 'all' | 'ambassador' | 'leader')}
-          className="border px-3 py-1 rounded text-sm"
-        >
-          <option value="all">All Roles</option>
-          <option value="ambassador">Ambassador</option>
-          <option value="leader">Leader</option>
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-          className="border px-3 py-1 rounded text-sm"
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
         <select
           value={sortField}
           onChange={(e) => setSortField(e.target.value as 'name' | 'activity' | 'compliance')}

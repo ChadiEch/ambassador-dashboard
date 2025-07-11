@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
 import TeamNotes from '../components/TeamNotes';
-
 import {
   BarChart,
   Bar,
@@ -36,7 +35,7 @@ interface AmbassadorSummary {
 interface User {
   id: string;
   name: string;
-  role: 'ambassador' | 'leader' | 'admin'; // ⬅️ Added 'admin'
+  role: 'ambassador' | 'leader' | 'admin';
   active: boolean;
 }
 
@@ -57,7 +56,6 @@ export default function AdminDashboard() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'ambassador' | 'leader'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
 
   const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('name');
@@ -128,19 +126,15 @@ export default function AdminDashboard() {
   const filtered = ambassadors
     .filter((amb) => {
       const user = users.find((u) => u.id === amb.id);
-      if (!user || user.role === 'admin') return false; // ⬅️ EXCLUDE ADMINS
+      if (!user || user.role === 'admin' || !user.active) return false;
 
       const matchesSearch = amb.name.toLowerCase().includes(search.toLowerCase());
       const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-      const matchesStatus =
-        statusFilter === 'all' ||
-        (statusFilter === 'active' && user.active) ||
-        (statusFilter === 'inactive' && !user.active);
       const matchesTeam =
         teamFilter === 'all' ||
         teams.find((t) => t.id === teamFilter)?.members.includes(amb.id);
 
-      return matchesSearch && matchesRole && matchesStatus && matchesTeam;
+      return matchesSearch && matchesRole && matchesTeam;
     })
     .sort((a, b) => {
       let aVal: number | string = '';
@@ -210,15 +204,6 @@ export default function AdminDashboard() {
           <option value="all">All Roles</option>
           <option value="ambassador">Ambassador</option>
           <option value="leader">Leader</option>
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-          className="border px-3 py-1 rounded text-sm"
-        >
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
         </select>
         <select
           value={teamFilter}
@@ -318,7 +303,7 @@ export default function AdminDashboard() {
                   <Bar dataKey="actual" fill="#4ade80" name="Actual" />
                 </BarChart>
               </ResponsiveContainer>
-                <TeamNotes memberId={amb.id} memberName={amb.name} />
+              <TeamNotes memberId={amb.id} memberName={amb.name} />
             </div>
           ))}
         </div>
