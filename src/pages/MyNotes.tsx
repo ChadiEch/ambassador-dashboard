@@ -6,7 +6,10 @@ interface Note {
   id: string;
   userName: string;
   role: string;
-  message: string;
+  content: string;
+   author: {
+    name: string;
+  };
   createdAt: string;
   archived: boolean;
 }
@@ -42,13 +45,18 @@ export default function NotesPage() {
           <p>No notes found.</p>
         ) : (
           <ul className="space-y-4">
-            {notes.map((note) => (
-              <li key={note.id} className="border rounded p-3 shadow">
-                <p className="text-sm text-gray-600">From: {note.userName} ({note.role})</p>
-                <p>{note.message}</p>
-                <p className="text-xs text-gray-400 mt-1">{new Date(note.createdAt).toLocaleString()}</p>
-              </li>
-            ))}
+{notes.map((note) => (
+  <div key={note.id} className="p-4 bg-gray-100 rounded mb-4">
+    <p className="text-sm text-gray-600">
+      From: <strong>{note.author?.name || 'Unknown'}</strong>
+    </p>
+    <p className="text-xs text-gray-500">
+      {new Date(note.createdAt).toLocaleString()}
+    </p>
+    <p className="mt-2">{note.content}</p>
+  </div>
+))}
+
           </ul>
         )}
       </div>
