@@ -17,7 +17,7 @@ export default function TeamNotes({ memberId, memberName }: Props) {
     try {
       await axios.post('https://ambassador-tracking-backend-production.up.railway.app/notes', {
         content,
-        leaderId: localStorage.getItem('userId'), 
+        authorId: localStorage.getItem('userId'), // ✅ use correct field
         targetUserId: memberId,
       });
       setSuccess(true);
