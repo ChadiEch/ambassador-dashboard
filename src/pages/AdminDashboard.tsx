@@ -34,7 +34,7 @@ interface AmbassadorSummary {
 interface User {
   id: string;
   name: string;
-  role: 'ambassador' | 'leader';
+  role: 'ambassador' | 'leader' | 'admin'; // ⬅️ Added 'admin'
   active: boolean;
 }
 
@@ -61,43 +61,42 @@ export default function AdminDashboard() {
   const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // Use useCallback for fetchAll
-const fetchAll = useCallback(async () => {
-  setLoading(true);
-  try {
-    const res = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/all-compliance', {
-      params: {
-        start: startDate || undefined,
-        end: endDate || undefined,
-      },
-    });
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        'https://ambassador-tracking-backend-production.up.railway.app/analytics/all-compliance',
+        {
+          params: {
+            start: startDate || undefined,
+            end: endDate || undefined,
+          },
+        }
+      );
 
-    // Normalize to always have plural keys
-    const normalized = res.data.map((amb: any) => ({
-      ...amb,
-      actual: {
-        stories: amb.actual.stories ?? amb.actual.story ?? 0,
-        posts: amb.actual.posts ?? amb.actual.post ?? 0,
-        reels: amb.actual.reels ?? amb.actual.reel ?? 0,
-      },
-      expected: {
-        stories: amb.expected.stories ?? amb.expected.story ?? 0,
-        posts: amb.expected.posts ?? amb.expected.post ?? 0,
-        reels: amb.expected.reels ?? amb.expected.reel ?? 0,
-      },
-    }));
+      const normalized = res.data.map((amb: any) => ({
+        ...amb,
+        actual: {
+          stories: amb.actual.stories ?? amb.actual.story ?? 0,
+          posts: amb.actual.posts ?? amb.actual.post ?? 0,
+          reels: amb.actual.reels ?? amb.actual.reel ?? 0,
+        },
+        expected: {
+          stories: amb.expected.stories ?? amb.expected.story ?? 0,
+          posts: amb.expected.posts ?? amb.expected.post ?? 0,
+          reels: amb.expected.reels ?? amb.expected.reel ?? 0,
+        },
+      }));
 
-    setAmbassadors(normalized);
-    setLastUpdate(new Date().toLocaleTimeString());
-  } catch (err) {
-    console.error('Error fetching ambassador data:', err);
-  } finally {
-    setLoading(false);
-  }
-}, [startDate, endDate]);
+      setAmbassadors(normalized);
+      setLastUpdate(new Date().toLocaleTimeString());
+    } catch (err) {
+      console.error('Error fetching ambassador data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [startDate, endDate]);
 
-
-  // Use useCallback for fetchUsersAndTeams
   const fetchUsersAndTeams = useCallback(async () => {
     try {
       const [usersRes, teamsRes] = await Promise.all([
@@ -117,23 +116,24 @@ const fetchAll = useCallback(async () => {
     }
   }, []);
 
-  // Add both as dependencies
   useEffect(() => {
     fetchAll();
     fetchUsersAndTeams();
-    const interval = setInterval(fetchAll, 180000); // Refresh every 60s
+    const interval = setInterval(fetchAll, 180000);
     return () => clearInterval(interval);
   }, [fetchAll, fetchUsersAndTeams]);
 
   const filtered = ambassadors
     .filter((amb) => {
       const user = users.find((u) => u.id === amb.id);
+      if (!user || user.role === 'admin') return false; // ⬅️ EXCLUDE ADMINS
+
       const matchesSearch = amb.name.toLowerCase().includes(search.toLowerCase());
-      const matchesRole = roleFilter === 'all' || user?.role === roleFilter;
+      const matchesRole = roleFilter === 'all' || user.role === roleFilter;
       const matchesStatus =
         statusFilter === 'all' ||
-        (statusFilter === 'active' && user?.active) ||
-        (statusFilter === 'inactive' && user && !user.active);
+        (statusFilter === 'active' && user.active) ||
+        (statusFilter === 'inactive' && !user.active);
       const matchesTeam =
         teamFilter === 'all' ||
         teams.find((t) => t.id === teamFilter)?.members.includes(amb.id);
@@ -259,33 +259,32 @@ const fetchAll = useCallback(async () => {
             <div key={amb.id} className="bg-white p-4 rounded-xl shadow-md">
               <h3 className="font-semibold text-lg mb-3">{amb.name}</h3>
               <div className="flex gap-2 mb-4">
-               {(['story', 'post', 'reel'] as const).map((type) => {
-  const expected =
-    type === 'story'
-      ? amb.expected.stories
-      : type === 'post'
-      ? amb.expected.posts
-      : amb.expected.reels;
+                {(['story', 'post', 'reel'] as const).map((type) => {
+                  const expected =
+                    type === 'story'
+                      ? amb.expected.stories
+                      : type === 'post'
+                      ? amb.expected.posts
+                      : amb.expected.reels;
 
-  const isGreen = amb.compliance[type] === 'green';
-  const isZeroRule = expected === 0;
+                  const isGreen = amb.compliance[type] === 'green';
+                  const isZeroRule = expected === 0;
 
-  const bgColor = isZeroRule
-    ? 'bg-yellow-500'
-    : isGreen
-    ? 'bg-green-500'
-    : 'bg-red-500';
+                  const bgColor = isZeroRule
+                    ? 'bg-yellow-500'
+                    : isGreen
+                    ? 'bg-green-500'
+                    : 'bg-red-500';
 
-  return (
-    <span
-      key={type}
-      className={`text-xs px-3 py-1 rounded-full text-white font-medium ${bgColor}`}
-    >
-      {type.toUpperCase()} ✓
-    </span>
-  );
-})}
-
+                  return (
+                    <span
+                      key={type}
+                      className={`text-xs px-3 py-1 rounded-full text-white font-medium ${bgColor}`}
+                    >
+                      {type.toUpperCase()} ✓
+                    </span>
+                  );
+                })}
               </div>
               <ResponsiveContainer width="100%" height={150}>
                 <BarChart
