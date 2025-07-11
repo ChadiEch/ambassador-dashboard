@@ -31,7 +31,14 @@ export default function Layout({ children }: LayoutProps) {
   }
 
   if (role === 'ambassador') {
-    navItems.push({ label: 'Rules', path: '/rules' });
+
+    navItems.push({ label: 'Rules', path: '/rules' },  { label: 'Notes', path: '/MyNotes'},
+);
+  }
+  if (role === 'leader') {
+
+    navItems.push( { label: 'Notes', path: '/MyNotes'},
+);
   }
 
   return (
