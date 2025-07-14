@@ -63,6 +63,7 @@ export default function LeaderDashboard() {
             },
           }
         );
+    console.log('📦 team-compliance response:', res.data); // 👈 log response here
 
         // ✅ Map photoUrl from the backend (fallbacks included)
 setTeam(
