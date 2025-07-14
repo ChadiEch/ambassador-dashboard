@@ -19,6 +19,8 @@ interface ComplianceData {
     post: string;
     reel: string;
   };
+  name: string;
+  photoUrl?: string;
 }
 
 export default function AmbassadorDashboard() {
@@ -71,6 +73,23 @@ export default function AmbassadorDashboard() {
   return (
     <Layout>
       <h2 className="text-2xl font-semibold mb-4">Weekly Activity Summary</h2>
+
+      {/* ✅ Profile section */}
+      {data && (
+        <div className="flex items-center mb-4 space-x-4">
+          {data.photoUrl && (
+            <img
+              src={data.photoUrl}
+              alt="Profile"
+              className="w-16 h-16 object-cover rounded border"
+            />
+          )}
+          <div>
+            <h3 className="text-xl font-semibold">{data.name}</h3>
+            <p className="text-gray-600 text-sm">Ambassador</p>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-3 items-center mb-4">
         <input
