@@ -33,11 +33,11 @@ export default function LeaderAnalytics() {
 
     const fetchData = async () => {
       try {
-        const res1 = await axios.get('/analytics/monthly-activity', {
+        const res1 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/monthly-activity', {
           params: { leaderId },
         });
 
-        const res2 = await axios.get('/analytics/team-compliance-stats', {
+        const res2 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-compliance-stats', {
           params: { leaderId },
         });
 
