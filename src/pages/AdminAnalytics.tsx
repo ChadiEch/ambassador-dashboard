@@ -18,6 +18,7 @@ export default function AdminAnalytics() {
 
   useEffect(() => {
     const fetchData = async () => {
+
       const res1 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/monthly-activity');
       const res2 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-activity');
       const res3 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-contribution');
