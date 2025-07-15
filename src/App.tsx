@@ -14,6 +14,8 @@ import AdminRules from './pages/AdminRules';
 import Rules from './pages/Rules';    
 import NotesPage from './pages/MyNotes';
 import InactiveUsers from './pages/InactiveUsers';
+import AdminAnalytics from './pages/AdminAnalytics';
+import LeaderAnalytics from './pages/LeaderAnalytics';
 function App() {
   return (
     <Router>
@@ -41,7 +43,7 @@ function App() {
           <Route path="/admin/admin-analytics" 
           element={
            <ProtectedRoute allowedRoles={['admin']}>
-          <InactiveUsers />
+          <AdminAnalytics />
           </ProtectedRoute>
           }
            />
@@ -108,7 +110,7 @@ function App() {
   path="/leader-analytics"
   element={
     <ProtectedRoute allowedRoles={['leader']}>
-      <NotesPage />
+      <LeaderAnalytics />
     </ProtectedRoute>
   }
 />
