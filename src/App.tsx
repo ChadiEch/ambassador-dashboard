@@ -38,6 +38,13 @@ function App() {
           </ProtectedRoute>
           }
            />
+          <Route path="/admin/admin-analytics" 
+          element={
+           <ProtectedRoute allowedRoles={['admin']}>
+          <InactiveUsers />
+          </ProtectedRoute>
+          }
+           />
 
         <Route
           path="/admin/feedback"
@@ -93,6 +100,14 @@ function App() {
   path="/MyNotes"
   element={
     <ProtectedRoute allowedRoles={['ambassador', 'leader']}>
+      <NotesPage />
+    </ProtectedRoute>
+  }
+/>
+        <Route
+  path="/leader-analytics"
+  element={
+    <ProtectedRoute allowedRoles={['leader']}>
       <NotesPage />
     </ProtectedRoute>
   }

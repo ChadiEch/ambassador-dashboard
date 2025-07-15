@@ -22,12 +22,13 @@ export default function Layout({ children }: LayoutProps) {
 
   if (role === 'admin') {
     navItems.push(
+      { label: 'Analytics', path: '/admin/admin-analytics' },
       { label: 'Feedback & Notes', path: '/admin/feedback' },
       { label: 'Moderation Panel', path: '/admin/moderation' },
       { label: 'User Management', path: '/admin/users' },
       { label: 'Team Management', path: '/admin/teams' },
       { label: 'Rules Management', path: '/admin/rules' },
-      { label: 'Leaved Ambassadors', path: '/admin/inactive-users' }
+      { label: 'Leaved Ambassadors', path: '/admin/inactive-users' },
     );
   }
 
@@ -39,6 +40,7 @@ export default function Layout({ children }: LayoutProps) {
   if (role === 'leader') {
 
     navItems.push( { label: 'Notes', path: '/MyNotes'},
+      { label: 'anlytics', path: '/leader-analytics' },
 );
   }
 
