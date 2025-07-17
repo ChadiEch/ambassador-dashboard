@@ -268,7 +268,7 @@ const team = teams.find(
     <h3 className="font-semibold text-lg">{amb.name}</h3>
   </div>
   <div>
-    <p className="text-sm text-gray-500">
+    <p className="text-sm text-gray-500 pb-4">
       Team: {team ? team.name : 'Unassigned'}
     </p>
   </div>
