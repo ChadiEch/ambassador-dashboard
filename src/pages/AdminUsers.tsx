@@ -292,7 +292,7 @@ const matchesTeam =
                   </div>
                 </>
               ) : (
-                <div className="flex justify-between items-start gap-6">
+              <div className="flex items-center justify-between gap-6">
                 {(() => {
                   const user1 = users.find((u) => u.id === user.id);
                   return (
@@ -309,7 +309,7 @@ const matchesTeam =
                   );
                 })()}
 
-                  <div>
+              <div className="flex-1">
                     <p className="font-semibold text-gray-800">{user.name}</p>
                     <p className="text-sm text-gray-500">Username: {user.username}</p>
                     <p className="text-sm text-gray-500">Role: {user.role}</p>
