@@ -274,10 +274,11 @@ const matchesTeam =
                     <option value="ambassador">Ambassador</option>
                     <option value="leader">Leader</option>
                   </select>
+                  <textarea name="" id=""></textarea>
                   <textarea value={editState.note || ''} placeholder="Note"
                     onChange={(e) => setEditState({ ...editState, note: e.target.value })}
-                    className="border px-3 py-1 rounded w-1 mb-2" >
-                  </textarea>
+                    className="border px-3 py-1 rounded w-full mb-2" />
+
                   <input
                       placeholder="Photo URL"
                       value={editState.photoUrl || ''}
