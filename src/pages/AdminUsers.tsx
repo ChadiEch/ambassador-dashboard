@@ -292,7 +292,7 @@ const matchesTeam =
                   </div>
                 </>
               ) : (
-              <div className="flex items-center justify-between gap-6">
+<div className="flex justify-between items-center gap-6">
                 {(() => {
                   const user1 = users.find((u) => u.id === user.id);
                   return (
@@ -301,7 +301,7 @@ const matchesTeam =
                         <img
                           src={user.photoUrl}
                           alt={`${user.name} profile`}
-                          className="w-40 h-40 object-cover cursor-pointer border hover:scale-105 transition"
+  className="w-32 h-32 object-cover rounded-full cursor-pointer border shadow hover:scale-105 transition"
                           onClick={() => setModalImage(user.photoUrl || '')}
                         />
                       )}
@@ -309,7 +309,7 @@ const matchesTeam =
                   );
                 })()}
 
-              <div className="flex-1">
+              <div>
                     <p className="font-semibold text-gray-800">{user.name}</p>
                     <p className="text-sm text-gray-500">Username: {user.username}</p>
                     <p className="text-sm text-gray-500">Role: {user.role}</p>
