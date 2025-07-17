@@ -317,7 +317,7 @@ const matchesTeam =
                     <p className="text-sm text-gray-500">DOB: {user.dob || '-'}</p>
                     <p className="text-sm text-gray-500">Phone: {user.phone || '-'}</p>
                     <p className="text-sm text-gray-500">Participation Date: {user.participationDate || '-'}</p>
-                    <pre className="text-sm text-gray-500">Note: {user.note || '-'}</pre>
+                    <p className="text-sm text-gray-500">Note: {user.note || '-'}</p>
                   </div>
                   <div className="flex flex-col gap-2">
                     <button onClick={() => {
