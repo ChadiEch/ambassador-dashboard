@@ -274,10 +274,10 @@ const matchesTeam =
                     <option value="ambassador">Ambassador</option>
                     <option value="leader">Leader</option>
                   </select>
-                  <input value={editState.note || ''} placeholder="Note"
+                  <textarea value={editState.note || ''} placeholder="Note"
                     onChange={(e) => setEditState({ ...editState, note: e.target.value })}
-                    className="border px-3 py-1 rounded w-full mb-2" />
-
+                    className="border px-3 py-1 rounded w-full mb-2" >
+                  </textarea>
                   <input
                       placeholder="Photo URL"
                       value={editState.photoUrl || ''}
@@ -317,7 +317,7 @@ const matchesTeam =
                     <p className="text-sm text-gray-500">DOB: {user.dob || '-'}</p>
                     <p className="text-sm text-gray-500">Phone: {user.phone || '-'}</p>
                     <p className="text-sm text-gray-500">Participation Date: {user.participationDate || '-'}</p>
-                    <p className="text-sm text-gray-500">Note: {user.note || '-'}</p>
+                    <pre className="text-sm text-gray-500">Note: {user.note || '-'}</pre>
                   </div>
                   <div className="flex flex-col gap-2">
                     <button onClick={() => {
