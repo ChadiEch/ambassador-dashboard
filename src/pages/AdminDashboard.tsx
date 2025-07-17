@@ -266,13 +266,12 @@ const team = teams.find(
       />
     )}
     <h3 className="font-semibold text-lg">{amb.name}</h3>
+  </div>
+  <div>
     <p className="text-sm text-gray-500">
       Team: {team ? team.name : 'Unassigned'}
     </p>
   </div>
-    <p className="text-sm text-gray-500">
-      Team: {team ? team.name : 'Unassigned'}
-    </p>
   <div className="flex gap-2 mb-4">
     {(['story', 'post', 'reel'] as const).map((type) => {
       const expected =
