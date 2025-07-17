@@ -301,7 +301,7 @@ const matchesTeam =
                         <img
                           src={user.photoUrl}
                           alt={`${user.name} profile`}
-  className="w-32 h-32 object-cover rounded-full cursor-pointer border shadow hover:scale-105 transition"
+                          className="ml-[130px] w-32 h-32 object-cover rounded-full cursor-pointer border shadow hover:scale-105 transition"
                           onClick={() => setModalImage(user.photoUrl || '')}
                         />
                       )}
