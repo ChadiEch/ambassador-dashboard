@@ -276,7 +276,7 @@ const matchesTeam =
                   </select>
                   <textarea value={editState.note || ''} placeholder="Note"
                     onChange={(e) => setEditState({ ...editState, note: e.target.value })}
-                    className="border px-3 py-1 rounded w-full mb-2" >
+                    className="border px-3 py-1 rounded w-1 mb-2" >
                   </textarea>
                   <input
                       placeholder="Photo URL"
