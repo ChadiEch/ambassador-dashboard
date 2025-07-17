@@ -257,21 +257,22 @@ const team = teams.find(
             return (
 <div key={amb.id} className="bg-white p-4 rounded-xl shadow-md">
   <div className="flex items-center mb-4 gap-3">
-    {user?.photoUrl && (
-      <img
-        src={user.photoUrl}
-        alt={`${amb.name} profile`}
-        onClick={() => window.open(user.photoUrl, '_blank')}
-        className="w-16 h-16 object-cover rounded-full border shadow cursor-pointer hover:scale-105 transition duration-150"
-      />
-    )}
-    <h3 className="font-semibold text-lg">{amb.name}</h3>
-  </div>
+  {user?.photoUrl && (
+    <img
+      src={user.photoUrl}
+      alt={`${amb.name} profile`}
+      onClick={() => window.open(user.photoUrl, '_blank')}
+      className="w-16 h-16 object-cover rounded-full border shadow cursor-pointer hover:scale-105 transition duration-150"
+    />
+  )}
   <div>
-    <p className="text-[10px] text-gray-500 pb-4">
+    <h3 className="font-semibold text-lg">{amb.name}</h3>
+    <p className="text-[10px] text-gray-500">
       Team: {team ? team.name : 'Unassigned'}
     </p>
   </div>
+</div>
+
   <div className="flex gap-2 mb-4">
     {(['story', 'post', 'reel'] as const).map((type) => {
       const expected =
