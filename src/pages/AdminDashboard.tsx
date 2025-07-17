@@ -245,7 +245,8 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((amb) => {
             const user = users.find((u) => u.id === amb.id);
-
+            const team = teams.find((t) => t.members.includes(amb.id));
+ 
             return (
 <div key={amb.id} className="bg-white p-4 rounded-xl shadow-md">
   <div className="flex items-center mb-4 gap-3">
@@ -258,6 +259,9 @@ export default function AdminDashboard() {
       />
     )}
     <h3 className="font-semibold text-lg">{amb.name}</h3>
+    <p className="text-sm text-gray-500">
+      Team: {team ? team.name : 'Unassigned'}
+    </p>
   </div>
 
   <div className="flex gap-2 mb-4">
