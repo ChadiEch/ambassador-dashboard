@@ -274,7 +274,7 @@ const matchesTeam =
                     <option value="ambassador">Ambassador</option>
                     <option value="leader">Leader</option>
                   </select>
-                  <textarea value={editState.note || ''} placeholder="Note"
+                  <input value={editState.note || ''} placeholder="Note"
                     onChange={(e) => setEditState({ ...editState, note: e.target.value })}
                     className="border px-3 py-1 rounded w-full mb-2" />
 
