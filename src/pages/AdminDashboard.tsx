@@ -43,6 +43,7 @@ interface User {
 interface Team {
   id: string;
   name: string;
+  leaderId: string;
   members: string[];
 }
 
@@ -105,13 +106,15 @@ export default function AdminDashboard() {
         axios.get('https://ambassador-tracking-backend-production.up.railway.app/admin/teams'),
       ]);
       setUsers(usersRes.data);
-      setTeams(
-        teamsRes.data.map((t: any) => ({
-          id: t.id,
-          name: t.name,
-          members: (t.members || []).map((m: any) => m.id),
-        }))
-      );
+setTeams(
+  teamsRes.data.map((t: any) => ({
+    id: t.id,
+    name: t.name,
+    leaderId: t.leader?.id,
+    members: (t.members || []).map((m: any) => m.id),
+  }))
+);
+
     } catch (err) {
       console.error('Error loading users or teams', err);
     }
@@ -245,7 +248,11 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((amb) => {
             const user = users.find((u) => u.id === amb.id);
-            const team = teams.find((t) => t.members.includes(amb.id));
+const team = teams.find(
+  (t) =>
+    t.members.includes(amb.id) || // if ambassador
+    t.leaderId === amb.id          // if leader
+);
  
             return (
 <div key={amb.id} className="bg-white p-4 rounded-xl shadow-md">
@@ -259,6 +266,7 @@ export default function AdminDashboard() {
       />
     )}
     <h3 className="font-semibold text-lg">{amb.name}</h3>
+    <br/>
     <p className="text-sm text-gray-500">
       Team: {team ? team.name : 'Unassigned'}
     </p>
