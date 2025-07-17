@@ -317,6 +317,10 @@ const fetchUsers = useCallback(async () => {
                         ? team.members.map((m) => m.name).join(', ')
                         : 'None'}
                     </p>
+                    <p className="text-sm text-gray-600">
+  Total Ambassadors: {team.members.length}
+</p>
+
                     <button
                       onClick={() => {
                         setEditingTeamId(team.id);
