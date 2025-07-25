@@ -30,6 +30,8 @@ interface AmbassadorSummary {
     post: string;
     reel: string;
   };
+  lastActivity?: string; // ✅ Add this
+
 }
 
 interface User {
@@ -148,8 +150,8 @@ setTeams(
         aVal = a.name.toLowerCase();
         bVal = b.name.toLowerCase();
       } else if (sortField === 'activity') {
-        aVal = a.actual.stories + a.actual.posts + a.actual.reels;
-        bVal = b.actual.stories + b.actual.posts + b.actual.reels;
+        aVal = new Date(a.lastActivity || 0).getTime();
+        bVal = new Date(b.lastActivity || 0).getTime();
       } else if (sortField === 'compliance') {
         const aGood = ['story', 'post', 'reel'].filter(
           (k) => a.compliance[k as keyof typeof a.compliance] === 'green'
@@ -270,6 +272,12 @@ const team = teams.find(
     <p className="text-[10px] text-gray-500">
       Team: {team ? team.name : 'Unassigned'}
     </p>
+    {amb.lastActivity && (
+  <p className="text-[10px] text-gray-500">
+    Last Active: {new Date(amb.lastActivity).toLocaleString()}
+  </p>
+)}
+
   </div>
 </div>
 
