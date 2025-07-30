@@ -40,7 +40,9 @@ interface User {
   role: 'ambassador' | 'leader' | 'admin';
   active: boolean;
   photoUrl?: string;
+  link?: string; // ✅ Added this
 }
+
 
 interface Team {
   id: string;
@@ -272,6 +274,16 @@ const team = teams.find(
     <p className="text-[10px] text-gray-500">
       Team: {team ? team.name : 'Unassigned'}
     </p>
+      {user?.link && (
+    <a
+      href={user.link.startsWith('http') ? user.link : `https://${user.link}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[10px] text-blue-600 underline"
+    >
+      {user.link}
+    </a>
+  )}
     {amb.lastActivity && (
   <p className="text-[10px] text-gray-500">
     Last Active: {new Date(amb.lastActivity).toLocaleString()}
