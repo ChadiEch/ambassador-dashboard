@@ -22,6 +22,8 @@ interface User {
   role: 'ambassador' | 'leader';
   active: boolean;
   photoUrl?: string; // ✅ Add this
+    link?: string;  // ✅ New field
+
 }
 
 
@@ -45,6 +47,7 @@ const [modalImage, setModalImage] = useState<string | null>(null);
     participationDate: '',
     role: 'ambassador',
     note: '',
+    link: '',   // ✅ New field
   });
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -210,6 +213,13 @@ const matchesTeam =
           <input type="date" value={newUser.dob}
             onChange={(e) => setNewUser({ ...newUser, dob: e.target.value })}
             className="border px-3 py-1 rounded" />
+            <input
+  placeholder="Link"
+  value={newUser.link || ''}
+  onChange={(e) => setNewUser({ ...newUser, link: e.target.value })}
+  className="border px-3 py-1 rounded"
+/>
+
           <input placeholder="Phone" value={newUser.phone}
             onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
             className="border px-3 py-1 rounded" />
@@ -262,6 +272,13 @@ const matchesTeam =
                   <input type="date" value={editState.dob || ''}
                     onChange={(e) => setEditState({ ...editState, dob: e.target.value })}
                     className="border px-3 py-1 rounded w-full mb-2" />
+                    <input
+  placeholder="Link"
+  value={editState.link || ''}
+  onChange={(e) => setEditState({ ...editState, link: e.target.value })}
+  className="border px-3 py-1 rounded w-full mb-2"
+/>
+
                   <input value={editState.phone || ''} placeholder="Phone"
                     onChange={(e) => setEditState({ ...editState, phone: e.target.value })}
                     className="border px-3 py-1 rounded w-full mb-2" />
@@ -315,6 +332,19 @@ const matchesTeam =
                     <p className="text-sm text-gray-500">Role: {user.role}</p>
                     <p className="text-sm text-gray-500">Instagram: {user.instagram || '-'}</p>
                     <p className="text-sm text-gray-500">DOB: {user.dob || '-'}</p>
+                    <p className="text-sm text-gray-500">
+  Link: {user.link ? (
+    <a
+      href={user.link.startsWith('http') ? user.link : `https://${user.link}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-blue-600 underline"
+    >
+      {user.link}
+    </a>
+  ) : '-'}
+</p>
+
                     <p className="text-sm text-gray-500">Phone: {user.phone || '-'}</p>
                     <p className="text-sm text-gray-500">Participation Date: {user.participationDate || '-'}</p>
                     <p className="text-sm text-gray-500">Note: {user.note || '-'}</p>
