@@ -114,17 +114,20 @@ export default function AdminUsers() {
     }
   };
 
-  const handleUpdate = async () => {
-    if (!editingUserId || !editState.name || !editState.username) return;
-    try {
-      await updateUser(editingUserId, editState);
-      setEditingUserId(null);
-      setEditState({});
-      fetchUsers();
-    } catch (err) {
-      console.error('Update failed', err);
-    }
-  };
+const handleUpdate = async () => {
+  if (!editingUserId || !editState.name || !editState.username) return;
+
+  try {
+    const { warnings, activities, ambassadorActivities, ...safeData } = editState as any;
+    await updateUser(editingUserId, safeData);
+    setEditingUserId(null);
+    setEditState({});
+    fetchUsers();
+  } catch (err) {
+    console.error('Update failed', err);
+  }
+};
+
 
   const handleToggle = async (id: string) => {
     try {
