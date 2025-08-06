@@ -463,13 +463,13 @@ export default function AdminUsers() {
                     {/* Deactivate / Activate button with modal if escalated */}
                     <button
                       onClick={async () => {
+                        if (user.active && user.warningEscalated) {
                           // Open modal for feedback on deactivation
                           setFeedbackModalUserId(user.id);
-                        
-                        // } else {
-                        //   // Toggle active status directly
-                        //   await handleToggle(user.id);
-                        // }
+                        } else {
+                          // Toggle active status directly
+                          await handleToggle(user.id);
+                        }
                       }}
                       className={`px-4 py-1 rounded text-white ${
                         user.active ? 'bg-red-600' : 'bg-green-600'
