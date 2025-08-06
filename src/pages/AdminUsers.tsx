@@ -35,6 +35,12 @@ export default function AdminUsers() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [modalImage, setModalImage] = useState<string | null>(null);
+  const [feedbackModalUserId, setFeedbackModalUserId] = useState<string | null>(null);
+  const [deactivationFeedback, setDeactivationFeedback] = useState({
+    reason: '',
+    rating: '',
+    note: '',
+  });
 
   const [newUser, setNewUser] = useState<Omit<User, 'id' | 'active'>>({
     name: '',
@@ -500,6 +506,77 @@ const handleUpdate = async () => {
           </div>
         </div>
       )}
+      {feedbackModalUserId && (
+  <div
+    className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+    onClick={() => setFeedbackModalUserId(null)}
+  >
+    <div
+      className="bg-white p-6 rounded shadow max-w-lg w-full"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3 className="text-lg font-semibold mb-4">Deactivation Feedback</h3>
+
+      <label className="block mb-2 text-sm font-medium">Reason for Leaving *</label>
+      <input
+        type="text"
+        className="w-full border px-3 py-2 rounded mb-4"
+        value={deactivationFeedback.reason}
+        onChange={(e) => setDeactivationFeedback({ ...deactivationFeedback, reason: e.target.value })}
+        placeholder="e.g. Not interested anymore"
+      />
+
+      <label className="block mb-2 text-sm font-medium">Rating (out of 10) *</label>
+      <input
+        type="number"
+        max={10}
+        min={0}
+        className="w-full border px-3 py-2 rounded mb-4"
+        value={deactivationFeedback.rating}
+        onChange={(e) => setDeactivationFeedback({ ...deactivationFeedback, rating: e.target.value })}
+        placeholder="e.g. 7"
+      />
+
+      <label className="block mb-2 text-sm font-medium">Optional Note</label>
+      <textarea
+        className="w-full border px-3 py-2 rounded mb-4"
+        rows={3}
+        value={deactivationFeedback.note}
+        onChange={(e) => setDeactivationFeedback({ ...deactivationFeedback, note: e.target.value })}
+        placeholder="Any additional context..."
+      />
+
+      <div className="flex justify-end gap-2">
+        <button
+          className="bg-gray-400 text-white px-4 py-2 rounded"
+          onClick={() => setFeedbackModalUserId(null)}
+        >
+          Cancel
+        </button>
+{filteredUsers.map((user) => (
+  <div key={user.id} className="bg-white p-4 rounded shadow-md">
+    {/* Other user content... */}
+    <button
+      onClick={async () => {
+        if (user.active) {
+          setFeedbackModalUserId(user.id);
+        } else {
+          await handleToggle(user.id);
+        }
+      }}
+      className={`px-4 py-1 rounded text-white ${
+        user.active ? 'bg-red-600' : 'bg-green-600'
+      }`}
+    >
+      {user.active ? 'Deactivate' : 'Activate'}
+    </button>
+  </div>
+))}
+      </div>
+    </div>
+  </div>
+)}
+
     </Layout>
   );
 }
