@@ -22,8 +22,8 @@ interface User {
   active: boolean;
   photoUrl?: string;
   link?: string;
-  warningsCount?: number;
-  warningEscalated?: boolean;
+  warningsCount?: number;         // ✅ new field from backend
+  warningEscalated?: boolean;     // ✅ indicates 3 warnings reached
 }
 
 export default function AdminUsers() {
@@ -35,8 +35,6 @@ export default function AdminUsers() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [modalImage, setModalImage] = useState<string | null>(null);
-
-  // State to control feedback modal and its inputs
   const [feedbackModalUserId, setFeedbackModalUserId] = useState<string | null>(null);
   const [deactivationFeedback, setDeactivationFeedback] = useState({
     reason: '',
@@ -74,16 +72,20 @@ export default function AdminUsers() {
   };
 
   const fetchTeams = async () => {
-    const res = await axios.get(
-      'https://ambassador-tracking-backend-production.up.railway.app/admin/teams'
-    );
-    setTeams(
-      res.data.map((t: any) => ({
-        id: t.id,
-        name: t.name,
-        members: (t.members || []).map((m: any) => m.id),
-      }))
-    );
+    try {
+      const res = await axios.get(
+        'https://ambassador-tracking-backend-production.up.railway.app/admin/teams'
+      );
+      setTeams(
+        res.data.map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          members: (t.members || []).map((m: any) => m.id),
+        }))
+      );
+    } catch (err) {
+      console.error('Failed to load teams', err);
+    }
   };
 
   const handleCreate = async () => {
@@ -126,6 +128,7 @@ export default function AdminUsers() {
     if (!editingUserId || !editState.name || !editState.username) return;
 
     try {
+      // Exclude any complex nested properties before update
       const { warnings, activities, ambassadorActivities, ...safeData } = editState as any;
       await updateUser(editingUserId, safeData);
       setEditingUserId(null);
@@ -136,6 +139,7 @@ export default function AdminUsers() {
     }
   };
 
+  // This function toggles user active status directly (activation or deactivation without feedback)
   const handleToggle = async (id: string) => {
     try {
       await toggleUserActive(id);
@@ -456,9 +460,17 @@ export default function AdminUsers() {
                       Pause Warnings
                     </button>
 
-                    {/* Deactivate (opens modal) */}
+                    {/* Deactivate / Activate button with modal if escalated */}
                     <button
-                      onClick={() => setFeedbackModalUserId(user.id)}
+                      onClick={async () => {
+                        if (user.active && user.warningEscalated) {
+                          // Open modal for feedback on deactivation
+                          setFeedbackModalUserId(user.id);
+                        } else {
+                          // Toggle active status directly
+                          await handleToggle(user.id);
+                        }
+                      }}
                       className={`px-4 py-1 rounded text-white ${
                         user.active ? 'bg-red-600' : 'bg-green-600'
                       }`}
@@ -552,36 +564,31 @@ export default function AdminUsers() {
               >
                 Cancel
               </button>
-
               <button
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                className="bg-red-600 text-white px-4 py-2 rounded"
                 onClick={async () => {
-                  if (!deactivationFeedback.reason.trim()) {
-                    alert('Please provide a reason for leaving.');
-                    return;
-                  }
-                  if (
-                    deactivationFeedback.rating === '' ||
-                    isNaN(Number(deactivationFeedback.rating)) ||
-                    Number(deactivationFeedback.rating) < 0 ||
-                    Number(deactivationFeedback.rating) > 10
-                  ) {
-                    alert('Please provide a valid rating between 0 and 10.');
+                  const { reason, rating } = deactivationFeedback;
+                  if (!reason.trim() || !rating.trim()) {
+                    alert('Please provide both reason and rating');
                     return;
                   }
 
                   try {
-                    // Send deactivation with feedback to backend
-                    await axios.patch(
-                      `/admin/users/${feedbackModalUserId}/deactivate`,
-                      deactivationFeedback
+                    await axios.post(
+                      `/admin/users/${feedbackModalUserId}/deactivate-with-feedback`,
+                      {
+                        reason: deactivationFeedback.reason,
+                        rating: Number(deactivationFeedback.rating),
+                        note: deactivationFeedback.note,
+                        date: new Date().toISOString(),
+                      }
                     );
                     setFeedbackModalUserId(null);
                     setDeactivationFeedback({ reason: '', rating: '', note: '' });
                     fetchUsers();
                   } catch (err) {
-                    console.error('Deactivation failed', err);
-                    alert('Deactivation failed. Please try again.');
+                    console.error('Failed to deactivate with feedback', err);
+                    alert('Something went wrong. Please try again.');
                   }
                 }}
               >
