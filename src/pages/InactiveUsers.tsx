@@ -2,12 +2,20 @@ import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import axios from 'axios';
 
+interface DeactivationInfo {
+  date: string;
+  rating: number;
+  note?: string;
+}
+
 interface InactiveUser {
   id: string;
   name: string;
   phone?: string;
-  note?: string;
+  note?: string; // general user note
   active?: boolean;
+  dateOfParticipation?: string;
+  deactivations?: DeactivationInfo[]; // array of deactivations
 }
 
 export default function InactiveUsers() {
@@ -51,13 +59,19 @@ export default function InactiveUsers() {
         <p>No inactive users found.</p>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {users.map((user) => (
-            <div key={user.id} className="border p-4 rounded shadow">
-              <p><strong>Name:</strong> {user.name}</p>
-              <p><strong>Phone:</strong> {user.phone || 'N/A'}</p>
-              <p><strong>Note:</strong> {user.note || 'No notes'}</p>
-            </div>
-          ))}
+          {users.map((user) => {
+            const latestDeactivation = user.deactivations?.[user.deactivations.length - 1];
+            return (
+              <div key={user.id} className="border p-4 rounded shadow">
+                <p><strong>Name:</strong> {user.name}</p>
+                <p><strong>Phone:</strong> {user.phone || 'N/A'}</p>
+                <p><strong>Date of Participation:</strong> {user.dateOfParticipation || 'Unknown'}</p>
+                <p><strong>Date of Leave:</strong> {latestDeactivation?.date ? new Date(latestDeactivation.date).toLocaleDateString() : 'Unknown'}</p>
+                <p><strong>Rating:</strong> {latestDeactivation?.rating ?? 'N/A'}</p>
+                <p><strong>Note:</strong> {latestDeactivation?.note || user.note || 'No notes'}</p>
+              </div>
+            );
+          })}
         </div>
       )}
     </Layout>
