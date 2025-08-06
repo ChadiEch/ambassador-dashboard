@@ -463,7 +463,7 @@ export default function AdminUsers() {
                     {/* Deactivate / Activate button with modal if escalated */}
                     <button
                       onClick={async () => {
-                        if (user.active && user.warningEscalated) {
+                        if (user.active ) {
                           // Open modal for feedback on deactivation
                           setFeedbackModalUserId(user.id);
                         } else {
