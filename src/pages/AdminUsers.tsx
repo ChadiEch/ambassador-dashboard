@@ -465,6 +465,7 @@ export default function AdminUsers() {
                       onClick={async () => {
                         if (user.active ) {
                           // Open modal for feedback on deactivation
+                          alert('Please provide feedback before deactivating');
                           setFeedbackModalUserId(user.id);
                         } else {
                           // Toggle active status directly
