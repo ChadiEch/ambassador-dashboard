@@ -22,8 +22,8 @@ interface User {
   active: boolean;
   photoUrl?: string;
   link?: string;
-  warningsCount?: number;         // ✅ new field from backend
-  warningEscalated?: boolean;     // ✅ indicates 3 warnings reached
+  warningsCount?: number;
+  warningEscalated?: boolean;
 }
 
 export default function AdminUsers() {
@@ -35,6 +35,8 @@ export default function AdminUsers() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [modalImage, setModalImage] = useState<string | null>(null);
+
+  // State to control feedback modal and its inputs
   const [feedbackModalUserId, setFeedbackModalUserId] = useState<string | null>(null);
   const [deactivationFeedback, setDeactivationFeedback] = useState({
     reason: '',
@@ -120,20 +122,19 @@ export default function AdminUsers() {
     }
   };
 
-const handleUpdate = async () => {
-  if (!editingUserId || !editState.name || !editState.username) return;
+  const handleUpdate = async () => {
+    if (!editingUserId || !editState.name || !editState.username) return;
 
-  try {
-    const { warnings, activities, ambassadorActivities, ...safeData } = editState as any;
-    await updateUser(editingUserId, safeData);
-    setEditingUserId(null);
-    setEditState({});
-    fetchUsers();
-  } catch (err) {
-    console.error('Update failed', err);
-  }
-};
-
+    try {
+      const { warnings, activities, ambassadorActivities, ...safeData } = editState as any;
+      await updateUser(editingUserId, safeData);
+      setEditingUserId(null);
+      setEditState({});
+      fetchUsers();
+    } catch (err) {
+      console.error('Update failed', err);
+    }
+  };
 
   const handleToggle = async (id: string) => {
     try {
@@ -455,19 +456,9 @@ const handleUpdate = async () => {
                       Pause Warnings
                     </button>
 
-                    {/* Deactivate (with reason if escalated) */}
+                    {/* Deactivate (opens modal) */}
                     <button
-                      onClick={async () => {
-                        if (user.warningEscalated) {
-                          const reason = prompt('Please provide reason for deactivation:');
-                          if (reason) {
-                            await axios.patch(`/admin/users/${user.id}/deactivate`, { reason });
-                            fetchUsers();
-                          }
-                        } else {
-                          await handleToggle(user.id);
-                        }
-                      }}
+                      onClick={() => setFeedbackModalUserId(user.id)}
                       className={`px-4 py-1 rounded text-white ${
                         user.active ? 'bg-red-600' : 'bg-green-600'
                       }`}
@@ -506,76 +497,100 @@ const handleUpdate = async () => {
           </div>
         </div>
       )}
+
+      {/* Deactivation Feedback Modal */}
       {feedbackModalUserId && (
-  <div
-    className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
-    onClick={() => setFeedbackModalUserId(null)}
-  >
-    <div
-      className="bg-white p-6 rounded shadow max-w-lg w-full"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h3 className="text-lg font-semibold mb-4">Deactivation Feedback</h3>
-
-      <label className="block mb-2 text-sm font-medium">Reason for Leaving *</label>
-      <input
-        type="text"
-        className="w-full border px-3 py-2 rounded mb-4"
-        value={deactivationFeedback.reason}
-        onChange={(e) => setDeactivationFeedback({ ...deactivationFeedback, reason: e.target.value })}
-        placeholder="e.g. Not interested anymore"
-      />
-
-      <label className="block mb-2 text-sm font-medium">Rating (out of 10) *</label>
-      <input
-        type="number"
-        max={10}
-        min={0}
-        className="w-full border px-3 py-2 rounded mb-4"
-        value={deactivationFeedback.rating}
-        onChange={(e) => setDeactivationFeedback({ ...deactivationFeedback, rating: e.target.value })}
-        placeholder="e.g. 7"
-      />
-
-      <label className="block mb-2 text-sm font-medium">Optional Note</label>
-      <textarea
-        className="w-full border px-3 py-2 rounded mb-4"
-        rows={3}
-        value={deactivationFeedback.note}
-        onChange={(e) => setDeactivationFeedback({ ...deactivationFeedback, note: e.target.value })}
-        placeholder="Any additional context..."
-      />
-
-      <div className="flex justify-end gap-2">
-        <button
-          className="bg-gray-400 text-white px-4 py-2 rounded"
+        <div
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
           onClick={() => setFeedbackModalUserId(null)}
         >
-          Cancel
-        </button>
-{filteredUsers.map((user) => (
-  <div key={user.id} className="bg-white p-4 rounded shadow-md">
-    {/* Other user content... */}
-    <button
-      onClick={async () => {
-  
-          setFeedbackModalUserId(user.id);
+          <div
+            className="bg-white p-6 rounded shadow max-w-lg w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold mb-4">Deactivation Feedback</h3>
 
-        
-      }}
-      className={`px-4 py-1 rounded text-white ${
-        user.active ? 'bg-red-600' : 'bg-green-600'
-      }`}
-    >
-      {user.active ? 'Deactivate' : 'Activate'}
-    </button>
-  </div>
-))}
-      </div>
-    </div>
-  </div>
-)}
+            <label className="block mb-2 text-sm font-medium">Reason for Leaving *</label>
+            <input
+              type="text"
+              className="w-full border px-3 py-2 rounded mb-4"
+              value={deactivationFeedback.reason}
+              onChange={(e) =>
+                setDeactivationFeedback({ ...deactivationFeedback, reason: e.target.value })
+              }
+              placeholder="e.g. Not interested anymore"
+            />
 
+            <label className="block mb-2 text-sm font-medium">Rating (out of 10) *</label>
+            <input
+              type="number"
+              max={10}
+              min={0}
+              className="w-full border px-3 py-2 rounded mb-4"
+              value={deactivationFeedback.rating}
+              onChange={(e) =>
+                setDeactivationFeedback({ ...deactivationFeedback, rating: e.target.value })
+              }
+              placeholder="e.g. 7"
+            />
+
+            <label className="block mb-2 text-sm font-medium">Optional Note</label>
+            <textarea
+              className="w-full border px-3 py-2 rounded mb-4"
+              rows={3}
+              value={deactivationFeedback.note}
+              onChange={(e) =>
+                setDeactivationFeedback({ ...deactivationFeedback, note: e.target.value })
+              }
+              placeholder="Any additional context..."
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+                onClick={() => setFeedbackModalUserId(null)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                onClick={async () => {
+                  if (!deactivationFeedback.reason.trim()) {
+                    alert('Please provide a reason for leaving.');
+                    return;
+                  }
+                  if (
+                    deactivationFeedback.rating === '' ||
+                    isNaN(Number(deactivationFeedback.rating)) ||
+                    Number(deactivationFeedback.rating) < 0 ||
+                    Number(deactivationFeedback.rating) > 10
+                  ) {
+                    alert('Please provide a valid rating between 0 and 10.');
+                    return;
+                  }
+
+                  try {
+                    // Send deactivation with feedback to backend
+                    await axios.patch(
+                      `/admin/users/${feedbackModalUserId}/deactivate`,
+                      deactivationFeedback
+                    );
+                    setFeedbackModalUserId(null);
+                    setDeactivationFeedback({ reason: '', rating: '', note: '' });
+                    fetchUsers();
+                  } catch (err) {
+                    console.error('Deactivation failed', err);
+                    alert('Deactivation failed. Please try again.');
+                  }
+                }}
+              >
+                Submit & Deactivate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
