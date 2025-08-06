@@ -558,11 +558,10 @@ const handleUpdate = async () => {
     {/* Other user content... */}
     <button
       onClick={async () => {
-        if (user.active) {
+  
           setFeedbackModalUserId(user.id);
-        } else {
-          await handleToggle(user.id);
-        }
+
+        
       }}
       className={`px-4 py-1 rounded text-white ${
         user.active ? 'bg-red-600' : 'bg-green-600'
