@@ -576,7 +576,7 @@ export default function AdminUsers() {
 
                   try {
                     await axios.post(
-                      `/admin/users/${feedbackModalUserId}/deactivate-with-feedback`,
+                      `https://ambassador-tracking-backend-production.up.railway.app/admin/users/${feedbackModalUserId}/deactivate-with-feedback`,
                       {
                         reason: deactivationFeedback.reason,
                         rating: Number(deactivationFeedback.rating),
