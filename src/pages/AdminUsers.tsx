@@ -412,7 +412,9 @@ export default function AdminUsers() {
                     <p className="text-sm text-gray-500">
                       Participation Date: {user.participationDate || '-'}
                     </p>
-                    <pre className="text-sm text-gray-500 w-32">Note: {user.note || '-'}</pre>
+                    <p className="text-sm text-gray-500 max-w-xs break-words">
+                      Note: {user.note || '-'}
+                    </p>
                     <p className="text-sm text-gray-500">
                       Warnings: <b>{user.warningsCount || 0}</b>
                       {user.warningEscalated && (
