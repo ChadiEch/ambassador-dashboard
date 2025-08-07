@@ -356,7 +356,7 @@ export default function AdminUsers() {
                     <option value="ambassador">Ambassador</option>
                     <option value="leader">Leader</option>
                   </select>
-                  <input
+                  <textarea
                     value={editState.note || ''}
                     placeholder="Note"
                     onChange={(e) => setEditState({ ...editState, note: e.target.value })}
