@@ -396,7 +396,7 @@ export default function AdminUsers() {
                     <img
                       src={user.photoUrl}
                       alt={`${user.name} profile`}
-                      className="ml-[17.5%] w-32 h-33 object-cover cursor-pointer border shadow hover:scale-105 transition"
+                      className=" w-32 h-33 object-cover cursor-pointer border shadow hover:scale-105 transition"
                       onClick={() => setModalImage(user.photoUrl || '')}
                     />
                   )}
