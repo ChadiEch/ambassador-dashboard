@@ -29,7 +29,6 @@ const AdminAnalytics = () => {
   const [complianceCount, setComplianceCount] = useState<number>(0);
   const [teamContribution, setTeamContribution] = useState<any[]>([]);
   const [monthlyActivity, setMonthlyActivity] = useState<Record<string, Record<string, number>>>({});
-  const [teamMonthlyActivity, setTeamMonthlyActivity] = useState<Record<string, Record<string, Record<string, number>>>>({});
   const [weeklyCompliance, setWeeklyCompliance] = useState<any[]>([]);
   const [complianceTrend, setComplianceTrend] = useState<any[]>([]);
 
@@ -55,7 +54,6 @@ const AdminAnalytics = () => {
         setComplianceCount(await complianceRes.json());
         setTeamContribution(await teamPieRes.json());
         setMonthlyActivity(await monthlyRes.json());
-        setTeamMonthlyActivity(await teamMonthlyRes.json());
         setWeeklyCompliance(await weeklyRes.json());
         setComplianceTrend(await trendRes.json());
       } catch (err) {
