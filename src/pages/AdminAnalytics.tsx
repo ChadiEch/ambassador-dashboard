@@ -22,7 +22,7 @@ export default function AdminAnalytics() {
       const res1 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/monthly-activity');
       const res2 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-monthly-activity');
       const res3 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-contribution');
-      const res4 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/overall-compliance-rate');
+      const res4 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/all-compliance');
       const res5 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/compliance-by-team');
 
       setMonthlyActivity(res1.data);
