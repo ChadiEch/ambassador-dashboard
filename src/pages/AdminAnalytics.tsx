@@ -1,179 +1,131 @@
-import React, { useEffect, useState } from 'react';
-import { Pie, Bar, Line } from 'react-chartjs-2';
+// src/pages/AdminAnalytics.tsx
+
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import Layout from '../components/Layout';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  ArcElement,
-  BarElement,
-  LineElement,
-  PointElement,
-  Tooltip,
-  Legend,
-  Title,
-} from 'chart.js';
+  LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, CartesianGrid, BarChart, Bar, ResponsiveContainer,
+} from 'recharts';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  ArcElement,
-  BarElement,
-  LineElement,
-  PointElement,
-  Tooltip,
-  Legend,
-  Title
-);
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9457EB'];
 
-const AdminAnalytics = () => {
-  const [complianceCount, setComplianceCount] = useState<number>(0);
-  const [teamContribution, setTeamContribution] = useState<any[]>([]);
-  const [monthlyActivity, setMonthlyActivity] = useState<Record<string, Record<string, number>>>({});
-  const [weeklyCompliance, setWeeklyCompliance] = useState<any[]>([]);
-  const [complianceTrend, setComplianceTrend] = useState<any[]>([]);
+export default function AdminAnalytics() {
+  const [monthlyActivity, setMonthlyActivity] = useState([]);
+  const [teamActivity, setTeamActivity] = useState([]);
+  const [teamContribution, setTeamContribution] = useState([]);
+  const [overallCompliance, setOverallCompliance] = useState([]);
+  const [teamCompliance, setTeamCompliance] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [
-          complianceRes,
-          teamPieRes,
-          monthlyRes,
-          weeklyRes,
-          trendRes
-        ] = await Promise.all([
-          fetch('/api/analytics/overall-compliance'),
-          fetch('/api/analytics/team-contribution'),
-          fetch('/api/analytics/monthly-activity'),
-          fetch('/api/analytics/team-monthly-activity'),
-          fetch('/api/analytics/weekly-compliance'),
-          fetch('/api/analytics/compliance-trend'),
-        ]);
+  const fetchData = async () => {
+    try {
+      const res1 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/monthly-activity');
+      const res2 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-activity');
+      const res3 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-contribution');
+      const res4 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/overall-compliance-rate');
+      const res5 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/compliance-by-team');
 
-        setComplianceCount(await complianceRes.json());
-        setTeamContribution(await teamPieRes.json());
-        setMonthlyActivity(await monthlyRes.json());
-        setWeeklyCompliance(await weeklyRes.json());
-        setComplianceTrend(await trendRes.json());
-      } catch (err) {
-        console.error('Failed to fetch analytics:', err);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // Helpers for Charts
-  const pieData = {
-    labels: teamContribution.map((item) => `Team ${item.teamId}`),
-    datasets: [{
-      data: teamContribution.map(item => (item.STORY || 0) + (item.IMAGE || 0) + (item.VIDEO || 0)),
-      backgroundColor: ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa'],
-    }]
+      setMonthlyActivity(res1.data);
+      setTeamActivity(res2.data);
+      setTeamContribution(res3.data);
+      setOverallCompliance(res4.data);
+      setTeamCompliance(res5.data);
+    } catch (err) {
+      console.error('Error fetching admin analytics:', err);
+    }
   };
 
-  const monthlyLabels = Object.keys(monthlyActivity);
-  const barData = {
-    labels: monthlyLabels,
-    datasets: [
-      {
-        label: 'Stories',
-        backgroundColor: '#60a5fa',
-        data: monthlyLabels.map(month => monthlyActivity[month]?.STORY || 0)
-      },
-      {
-        label: 'Posts',
-        backgroundColor: '#34d399',
-        data: monthlyLabels.map(month => monthlyActivity[month]?.IMAGE || 0)
-      },
-      {
-        label: 'Reels',
-        backgroundColor: '#fbbf24',
-        data: monthlyLabels.map(month => monthlyActivity[month]?.VIDEO || 0)
-      },
-    ]
-  };
-
-  const lineLabels = complianceTrend.map(c => c.month);
-  const lineData = {
-    labels: lineLabels,
-    datasets: [
-      {
-        label: 'Compliant Ambassadors',
-        data: complianceTrend.map(c => c.compliant),
-        fill: false,
-        borderColor: '#10b981',
-        tension: 0.4
-      }
-    ]
-  };
+  fetchData();
+}, []);
 
   return (
-    <div className="p-8 space-y-12">
-      <h1 className="text-3xl font-bold mb-4">📊 Admin Analytics Dashboard</h1>
+    <Layout>
+      <h1 className="text-2xl font-bold mb-6">Admin Analytics Dashboard</h1>
 
-      {/* 1. Compliance Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-green-100 text-green-700 p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold">Compliant Ambassadors</h2>
-          <p className="text-4xl mt-2">{complianceCount}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* 1. Monthly Ambassador Activity */}
+        <div>
+          <h2 className="font-semibold text-lg mb-2">Monthly Ambassador Activity</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={monthlyActivity}>
+              <CartesianGrid stroke="#ccc" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="stories" stroke="#8884d8" />
+              <Line type="monotone" dataKey="posts" stroke="#82ca9d" />
+              <Line type="monotone" dataKey="reels" stroke="#ffc658" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 2. Team Activity */}
+        <div>
+          <h2 className="font-semibold text-lg mb-2">Team Activity Comparison</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={teamActivity}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="teamName" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="stories" fill="#8884d8" />
+              <Bar dataKey="posts" fill="#82ca9d" />
+              <Bar dataKey="reels" fill="#ffc658" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 3. Team Contribution Pie */}
+        <div>
+          <h2 className="font-semibold text-lg mb-2">Team Contribution %</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={teamContribution}
+                dataKey="percentage"
+                nameKey="team"
+                outerRadius={100}
+                label
+              >
+                {teamContribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 4. Overall Compliance */}
+        <div>
+          <h2 className="font-semibold text-lg mb-2">Overall Compliance Rate</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={overallCompliance}>
+              <XAxis dataKey="week" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="compliantAmbassadors" stroke="#00C49F" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 5. Compliance by Team */}
+        <div>
+          <h2 className="font-semibold text-lg mb-2">Compliance by Team</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={teamCompliance}>
+              <XAxis dataKey="teamName" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="compliantCount" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
-
-      {/* 2. Team Contribution Pie */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Team Contribution</h2>
-        <div className="max-w-md">
-          <Pie data={pieData} />
-        </div>
-      </div>
-
-      {/* 3. Global Monthly Activity */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Monthly Activity (Global)</h2>
-        <Bar data={barData} />
-      </div>
-
-      {/* 4. Weekly Compliance Table */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Ambassador Weekly Compliance</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-2 text-left">Name</th>
-                <th className="px-4 py-2">Stories</th>
-                <th className="px-4 py-2">Posts</th>
-                <th className="px-4 py-2">Reels</th>
-                <th className="px-4 py-2">Compliance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {weeklyCompliance.map((u) => (
-                <tr key={u.id} className="border-b">
-                  <td className="px-4 py-2">{u.name}</td>
-                  <td className="px-4 py-2">{u.actual.stories}</td>
-                  <td className="px-4 py-2">{u.actual.posts}</td>
-                  <td className="px-4 py-2">{u.actual.reels}</td>
-                  <td className="px-4 py-2">
-                    <span className={`px-2 py-1 rounded-full text-white text-xs ${u.compliance.story === 'green' && u.compliance.post === 'green' && u.compliance.reel === 'green' ? 'bg-green-500' : 'bg-red-500'}`}>
-                      {u.compliance.story === 'green' && u.compliance.post === 'green' && u.compliance.reel === 'green' ? 'Compliant' : 'Non-compliant'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* 5. Compliance Trend Line Chart */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Compliance Trend Over Time</h2>
-        <Line data={lineData} />
-      </div>
-    </div>
+    </Layout>
   );
-};
-
-export default AdminAnalytics;
+}
