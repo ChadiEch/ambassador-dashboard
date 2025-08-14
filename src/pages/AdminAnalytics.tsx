@@ -39,7 +39,6 @@ const AdminAnalytics = () => {
           complianceRes,
           teamPieRes,
           monthlyRes,
-          teamMonthlyRes,
           weeklyRes,
           trendRes
         ] = await Promise.all([
