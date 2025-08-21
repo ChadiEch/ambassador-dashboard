@@ -14,7 +14,7 @@ export default function AdminAnalytics() {
   const [teamActivity, setTeamActivity] = useState([]);
   const [teamContribution, setTeamContribution] = useState([]);
   const [overallCompliance, setOverallCompliance] = useState([]);
-  const [teamCompliance, setTeamCompliance] = useState([]);
+  // const [teamCompliance, setTeamCompliance] = useState([]);
 
   useEffect(() => {
   const fetchData = async () => {
@@ -115,15 +115,15 @@ export default function AdminAnalytics() {
         {/* 5. Compliance by Team */}
         <div>
           <h2 className="font-semibold text-lg mb-2">Compliance by Team</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={teamCompliance}>
+          {/* <ResponsiveContainer width="100%" height={300}> */}
+            {/* <BarChart data={teamCompliance}>
               <XAxis dataKey="teamName" />
               <YAxis />
               <Tooltip />
               <Legend />
               <Bar dataKey="compliantCount" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
+            </BarChart> */}
+          {/* </ResponsiveContainer> */}
         </div>
       </div>
     </Layout>
