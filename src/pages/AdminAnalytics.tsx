@@ -1,5 +1,4 @@
 // src/pages/AdminAnalytics.tsx
-
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
@@ -9,34 +8,85 @@ import {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9457EB'];
 
+// ✅ Type definitions
+type MonthlyActivityItem = {
+  month: string;
+  stories?: number;
+  posts?: number;
+  reels?: number;
+};
+
+type TeamActivityItem = {
+  teamName: string;
+  stories?: number;
+  posts?: number;
+  reels?: number;
+};
+
+type TeamContributionItem = {
+  team: string;
+  percentage: number;
+};
+
+type OverallComplianceItem = {
+  week: string;
+  compliantAmbassadors: number;
+};
+
 export default function AdminAnalytics() {
-  const [monthlyActivity, setMonthlyActivity] = useState([]);
-  const [teamActivity, setTeamActivity] = useState([]);
-  const [teamContribution, setTeamContribution] = useState([]);
-  const [overallCompliance, setOverallCompliance] = useState([]);
-  // const [teamCompliance, setTeamCompliance] = useState([]);
+  const [monthlyActivity, setMonthlyActivity] = useState<MonthlyActivityItem[]>([]);
+  const [teamActivity, setTeamActivity] = useState<TeamActivityItem[]>([]);
+  const [teamContribution, setTeamContribution] = useState<TeamContributionItem[]>([]);
+  const [overallCompliance, setOverallCompliance] = useState<OverallComplianceItem[]>([]);
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const res1 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/monthly-activity');
-      const res2 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-activity');
-      const res3 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-contribution');
-      const res4 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/overall-compliance-rate');
-      // const res5 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/compliance-by-team');
+    const fetchData = async () => {
+      try {
+        const res1 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/monthly-activity');
+        const res2 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-activity');
+        const res3 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-contribution');
+        const res4 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/overall-compliance-rate');
 
-      setMonthlyActivity(res1.data);
-      setTeamActivity(res2.data);
-      setTeamContribution(res3.data);
-      setOverallCompliance(res4.data);
-      // setTeamCompliance(res5.data);
-    } catch (err) {
-      console.error('Error fetching admin analytics:', err);
-    }
-  };
+        // ✅ Convert object responses to arrays if needed
+        const monthlyData: MonthlyActivityItem[] = Array.isArray(res1.data)
+          ? res1.data
+          : Object.entries(res1.data).map(([month, counts]) => ({
+              month,
+              ...(counts as Partial<MonthlyActivityItem>),
+            }));
 
-  fetchData();
-}, []);
+        const teamData: TeamActivityItem[] = Array.isArray(res2.data)
+          ? res2.data
+          : Object.entries(res2.data).map(([teamName, counts]) => ({
+              teamName,
+              ...(counts as Partial<TeamActivityItem>),
+            }));
+
+        const contributionData: TeamContributionItem[] = Array.isArray(res3.data)
+          ? res3.data
+          : Object.entries(res3.data).map(([team, counts]) => ({
+              team,
+              percentage: (counts as any).percentage ?? 0,
+            }));
+
+        const complianceData: OverallComplianceItem[] = Array.isArray(res4.data)
+          ? res4.data
+          : Object.entries(res4.data).map(([week, counts]) => ({
+              week,
+              compliantAmbassadors: (counts as any).compliantAmbassadors ?? 0,
+            }));
+
+        setMonthlyActivity(monthlyData);
+        setTeamActivity(teamData);
+        setTeamContribution(contributionData);
+        setOverallCompliance(complianceData);
+      } catch (err) {
+        console.error('Error fetching admin analytics:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <Layout>
@@ -110,20 +160,6 @@ export default function AdminAnalytics() {
               <Line type="monotone" dataKey="compliantAmbassadors" stroke="#00C49F" />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-
-        {/* 5. Compliance by Team */}
-        <div>
-          <h2 className="font-semibold text-lg mb-2">Compliance by Team</h2>
-          {/* <ResponsiveContainer width="100%" height={300}> */}
-            {/* <BarChart data={teamCompliance}>
-              <XAxis dataKey="teamName" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="compliantCount" fill="#82ca9d" />
-            </BarChart> */}
-          {/* </ResponsiveContainer> */}
         </div>
       </div>
     </Layout>
