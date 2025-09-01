@@ -10,7 +10,7 @@ export async function createUser(user: {
   username: string;
   password?: string; // allow optional password
   instagram?: string;
-  dob?: string;
+  dob?: string; 
   role: 'ambassador' | 'leader';
 }) {
   const res = await axios.post('/admin/users', user);
