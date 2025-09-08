@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '../components/Layout';
 import analyticsAPI, {
   DashboardStats,
@@ -125,7 +126,9 @@ export default function AdminAnalytics() {
   }, [timeRange, fetchAllData]);
 
   const calculateActivityGrowth = () => {
-    if (!dashboardStats) return { trend: 'neutral' as const, value: '0%' };
+    if (!dashboardStats || dashboardStats.lastWeekActivity === null || dashboardStats.thisWeekActivity === null) {
+      return { trend: 'neutral' as const, value: '0%' };
+    }
     const growth = dashboardStats.lastWeekActivity > 0 ? 
       ((dashboardStats.thisWeekActivity - dashboardStats.lastWeekActivity) / dashboardStats.lastWeekActivity) * 100 : 0;
     return {
@@ -204,8 +207,8 @@ export default function AdminAnalytics() {
             />
             <KPICard
               title="Compliance Rate"
-              value={`${dashboardStats.overallComplianceRate.toFixed(1)}%`}
-              color={getComplianceColor(dashboardStats.overallComplianceRate)}
+              value={`${(dashboardStats.overallComplianceRate || 0).toFixed(1)}%`}
+              color={getComplianceColor(dashboardStats.overallComplianceRate || 0)}
             />
             <KPICard
               title="This Week Activity"
@@ -323,7 +326,7 @@ export default function AdminAnalytics() {
                   fill="#8884d8"
                   dataKey="count"
                   nameKey="mediaType"
-                  label={({ mediaType, percentage }) => `${mediaType}: ${percentage.toFixed(1)}%`}
+                  label={({ mediaType, percentage }) => `${mediaType}: ${(percentage || 0).toFixed(1)}%`}
                 >
                   {activityDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -374,7 +377,7 @@ export default function AdminAnalytics() {
                           performer.complianceScore >= 60 ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'
                         }`}>
-                          {performer.complianceScore.toFixed(1)}%
+                          {(performer.complianceScore || 0).toFixed(1)}%
                         </span>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{performer.totalActivity}</td>
