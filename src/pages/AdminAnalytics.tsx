@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
 import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '../components/Layout';
+import analyticsAPI, {
   DashboardStats,
   ActivityTrend,
   TeamPerformance,
@@ -106,12 +106,12 @@ export default function AdminAnalytics() {
       ]);
 
       setDashboardStats(statsData);
-      setActivityTrends(trendsData);
-      setTeamPerformance(performanceData);
-      setComplianceTrends(complianceData);
-      setActivityDistribution(distributionData);
-      setTopPerformers(performersData);
-      setInactiveUsers(inactiveData);
+      setActivityTrends(Array.isArray(trendsData) ? trendsData : []);
+      setTeamPerformance(Array.isArray(performanceData) ? performanceData : []);
+      setComplianceTrends(Array.isArray(complianceData) ? complianceData : []);
+      setActivityDistribution(Array.isArray(distributionData) ? distributionData : []);
+      setTopPerformers(Array.isArray(performersData) ? performersData : []);
+      setInactiveUsers(Array.isArray(inactiveData) ? inactiveData : []);
     } catch (err) {
       console.error('Error fetching analytics data:', err);
       setError('Failed to load analytics data. Please try again.');
@@ -295,7 +295,7 @@ export default function AdminAnalytics() {
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-4">Team Performance</h2>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={teamPerformance.slice(0, 6)}>
+              <BarChart data={teamPerformance && teamPerformance.slice(0, 6)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="teamName" 
@@ -325,9 +325,9 @@ export default function AdminAnalytics() {
                   fill="#8884d8"
                   dataKey="count"
                   nameKey="mediaType"
-                  label={({ mediaType, percentage }) => `${mediaType}: ${(percentage || 0).toFixed(1)}%`}
+                  label={({ mediaType, percentage }) => `${mediaType}: ${(typeof percentage === 'number' ? percentage : 0).toFixed(1)}%`}
                 >
-                  {activityDistribution.map((entry, index) => (
+                  {activityDistribution && activityDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -353,7 +353,7 @@ export default function AdminAnalytics() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {topPerformers.map((performer, index) => (
+                  {topPerformers && topPerformers.map((performer, index) => (
                     <tr key={performer.userId}>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -376,7 +376,7 @@ export default function AdminAnalytics() {
                           performer.complianceScore >= 60 ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'
                         }`}>
-                          {(performer.complianceScore || 0).toFixed(1)}%
+                          {(typeof performer.complianceScore === 'number' ? performer.complianceScore : 0).toFixed(1)}%
                         </span>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{performer.totalActivity}</td>
@@ -401,7 +401,7 @@ export default function AdminAnalytics() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {inactiveUsers.slice(0, 5).map((user) => (
+                  {inactiveUsers && inactiveUsers.slice(0, 5).map((user) => (
                     <tr key={user.userId}>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{user.userName}</div>

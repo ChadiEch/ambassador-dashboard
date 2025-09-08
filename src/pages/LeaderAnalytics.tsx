@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
 import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '../components/Layout';
+import analyticsAPI, {
   TeamPerformance,
   UserEngagement,
   ActivityTrend
@@ -241,7 +241,7 @@ export default function LeaderAnalytics() {
           />
           <TeamKPICard
             title="Avg Compliance"
-            value={`${(stats.avgComplianceScore || 0).toFixed(1)}%`}
+            value={`${(typeof stats.avgComplianceScore === 'number' ? stats.avgComplianceScore : 0).toFixed(1)}%`}
             color={getComplianceColor(stats.avgComplianceScore)}
           />
           <TeamKPICard
@@ -415,7 +415,7 @@ export default function LeaderAnalytics() {
                         member.complianceScore >= 60 ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
                       }`}>
-                        {(member.complianceScore || 0).toFixed(1)}%
+                        {(typeof member.complianceScore === 'number' ? member.complianceScore : 0).toFixed(1)}%
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.stories}</td>
