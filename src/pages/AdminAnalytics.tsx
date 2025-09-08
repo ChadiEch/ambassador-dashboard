@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '../components/Layout';
-import analyticsAPI, {
   DashboardStats,
   ActivityTrend,
   TeamPerformance,
