@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Layout from '../components/Layout';
 import analyticsAPI, {
   DashboardStats,
   ActivityTrend,
   TeamPerformance,
-  UserEngagement,
   ComplianceTrend,
   ActivityDistribution,
   TopPerformers,
@@ -25,9 +24,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  RadialBarChart,
-  RadialBar
+  ResponsiveContainer
 } from 'recharts';
 import { format } from 'date-fns';
 
@@ -79,18 +76,13 @@ export default function AdminAnalytics() {
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [activityTrends, setActivityTrends] = useState<ActivityTrend[]>([]);
   const [teamPerformance, setTeamPerformance] = useState<TeamPerformance[]>([]);
-  const [userEngagement, setUserEngagement] = useState<UserEngagement[]>([]);
   const [complianceTrends, setComplianceTrends] = useState<ComplianceTrend[]>([]);
   const [activityDistribution, setActivityDistribution] = useState<ActivityDistribution[]>([]);
   const [topPerformers, setTopPerformers] = useState<TopPerformers[]>([]);
   const [inactiveUsers, setInactiveUsers] = useState<InactiveUsers[]>([]);
   const [timeRange, setTimeRange] = useState(30);
 
-  useEffect(() => {
-    fetchAllData();
-  }, [timeRange]);
-
-  const fetchAllData = async () => {
+  const fetchAllData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -99,7 +91,6 @@ export default function AdminAnalytics() {
         statsData,
         trendsData,
         performanceData,
-        engagementData,
         complianceData,
         distributionData,
         performersData,
@@ -108,7 +99,6 @@ export default function AdminAnalytics() {
         analyticsAPI.getDashboardStats(),
         analyticsAPI.getActivityTrends(timeRange),
         analyticsAPI.getTeamPerformance(),
-        analyticsAPI.getUserEngagement(),
         analyticsAPI.getComplianceTrends(6),
         analyticsAPI.getActivityDistribution(),
         analyticsAPI.getTopPerformers(5),
@@ -118,7 +108,6 @@ export default function AdminAnalytics() {
       setDashboardStats(statsData);
       setActivityTrends(trendsData);
       setTeamPerformance(performanceData);
-      setUserEngagement(engagementData);
       setComplianceTrends(complianceData);
       setActivityDistribution(distributionData);
       setTopPerformers(performersData);
@@ -129,7 +118,11 @@ export default function AdminAnalytics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
+
+  useEffect(() => {
+    fetchAllData();
+  }, [timeRange, fetchAllData]);
 
   const calculateActivityGrowth = () => {
     if (!dashboardStats) return { trend: 'neutral' as const, value: '0%' };

@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Layout from '../components/Layout';
 import analyticsAPI, {
   TeamPerformance,
   UserEngagement,
-  ActivityTrend,
-  ComplianceTrend
+  ActivityTrend
 } from '../api/analytics';
 import {
   LineChart,
@@ -24,8 +23,6 @@ import {
   Cell
 } from 'recharts';
 import { format } from 'date-fns';
-
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 interface TeamKPICardProps {
   title: string;
@@ -80,23 +77,13 @@ export default function LeaderAnalytics() {
   const [teamPerformance, setTeamPerformance] = useState<TeamPerformance | null>(null);
   const [teamMembers, setTeamMembers] = useState<UserEngagement[]>([]);
   const [activityTrends, setActivityTrends] = useState<ActivityTrend[]>([]);
-  const [complianceTrends, setComplianceTrends] = useState<ComplianceTrend[]>([]);
   const [monthlyActivity, setMonthlyActivity] = useState<any[]>([]);
   const [teamStats, setTeamStats] = useState<any[]>([]);
   const [timeRange, setTimeRange] = useState(30);
 
   const leaderId = localStorage.getItem('userId');
 
-  useEffect(() => {
-    if (!leaderId) {
-      setError('Leader ID not found. Please log in again.');
-      setLoading(false);
-      return;
-    }
-    fetchTeamAnalytics();
-  }, [leaderId, timeRange]);
-
-  const fetchTeamAnalytics = async () => {
+  const fetchTeamAnalytics = useCallback(async () => {
     if (!leaderId) return;
 
     try {
@@ -108,14 +95,12 @@ export default function LeaderAnalytics() {
         allTeamPerformance,
         allUserEngagement,
         trends,
-        compliance,
         monthly,
         stats
       ] = await Promise.all([
         analyticsAPI.getTeamPerformance(),
         analyticsAPI.getUserEngagement(),
         analyticsAPI.getActivityTrends(timeRange),
-        analyticsAPI.getComplianceTrends(3),
         analyticsAPI.getMonthlyActivity(leaderId),
         analyticsAPI.getTeamComplianceStats(leaderId)
       ]);
@@ -133,7 +118,6 @@ export default function LeaderAnalytics() {
       setTeamPerformance(currentTeam || null);
       setTeamMembers(currentTeamMembers);
       setActivityTrends(trends);
-      setComplianceTrends(compliance);
       setMonthlyActivity(monthly);
       setTeamStats(stats);
     } catch (err) {
@@ -142,7 +126,16 @@ export default function LeaderAnalytics() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leaderId, timeRange]);
+
+  useEffect(() => {
+    if (!leaderId) {
+      setError('Leader ID not found. Please log in again.');
+      setLoading(false);
+      return;
+    }
+    fetchTeamAnalytics();
+  }, [leaderId, timeRange, fetchTeamAnalytics]);
 
   const getComplianceColor = (score: number) => {
     if (score >= 80) return '#10B981';
