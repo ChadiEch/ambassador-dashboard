@@ -101,25 +101,31 @@ export interface AmbassadorSummary {
 class AnalyticsAPI {
   // ===== NEW COMPREHENSIVE ENDPOINTS =====
   
-  async getDashboardStats(): Promise<DashboardStats> {
-    const response = await axios.get('/analytics/dashboard-stats');
-    return response.data;
-  }
-
-  async getActivityTrends(days: number = 30): Promise<ActivityTrend[]> {
-    const response = await axios.get('/analytics/activity-trends', {
-      params: { days }
+  async getDashboardStats(startDate?: string, endDate?: string): Promise<DashboardStats> {
+    const response = await axios.get('/analytics/dashboard-stats', {
+      params: { startDate, endDate }
     });
     return response.data;
   }
 
-  async getTeamPerformance(): Promise<TeamPerformance[]> {
-    const response = await axios.get('/analytics/team-performance');
+  async getActivityTrends(days?: number, startDate?: string, endDate?: string): Promise<ActivityTrend[]> {
+    const response = await axios.get('/analytics/activity-trends', {
+      params: { days, startDate, endDate }
+    });
     return response.data;
   }
 
-  async getUserEngagement(): Promise<UserEngagement[]> {
-    const response = await axios.get('/analytics/user-engagement');
+  async getTeamPerformance(startDate?: string, endDate?: string): Promise<TeamPerformance[]> {
+    const response = await axios.get('/analytics/team-performance', {
+      params: { startDate, endDate }
+    });
+    return response.data;
+  }
+
+  async getUserEngagement(startDate?: string, endDate?: string): Promise<UserEngagement[]> {
+    const response = await axios.get('/analytics/user-engagement', {
+      params: { startDate, endDate }
+    });
     return response.data;
   }
 
@@ -135,9 +141,9 @@ class AnalyticsAPI {
     return response.data;
   }
 
-  async getTopPerformers(limit: number = 10): Promise<TopPerformers[]> {
+  async getTopPerformers(limit: number = 10, startDate?: string, endDate?: string): Promise<TopPerformers[]> {
     const response = await axios.get('/analytics/top-performers', {
-      params: { limit }
+      params: { limit, startDate, endDate }
     });
     return response.data;
   }

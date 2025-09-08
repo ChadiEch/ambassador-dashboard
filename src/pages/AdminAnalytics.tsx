@@ -26,7 +26,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16'];
 
@@ -80,12 +80,18 @@ export default function AdminAnalytics() {
   const [activityDistribution, setActivityDistribution] = useState<ActivityDistribution[]>([]);
   const [topPerformers, setTopPerformers] = useState<TopPerformers[]>([]);
   const [inactiveUsers, setInactiveUsers] = useState<InactiveUsers[]>([]);
-  const [timeRange, setTimeRange] = useState(30);
+  const [startDate, setStartDate] = useState(format(subDays(new Date(), 7), 'yyyy-MM-dd'));
+  const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
   const fetchAllData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+
+      const dateParams = {
+        startDate,
+        endDate
+      };
 
       const [
         statsData,
@@ -96,12 +102,12 @@ export default function AdminAnalytics() {
         performersData,
         inactiveData
       ] = await Promise.all([
-        analyticsAPI.getDashboardStats(),
-        analyticsAPI.getActivityTrends(timeRange),
-        analyticsAPI.getTeamPerformance(),
+        analyticsAPI.getDashboardStats(dateParams.startDate, dateParams.endDate),
+        analyticsAPI.getActivityTrends(undefined, dateParams.startDate, dateParams.endDate),
+        analyticsAPI.getTeamPerformance(dateParams.startDate, dateParams.endDate),
         analyticsAPI.getComplianceTrends(6),
         analyticsAPI.getActivityDistribution(),
-        analyticsAPI.getTopPerformers(5),
+        analyticsAPI.getTopPerformers(5, dateParams.startDate, dateParams.endDate),
         analyticsAPI.getInactiveUsers(7)
       ]);
 
@@ -118,11 +124,11 @@ export default function AdminAnalytics() {
     } finally {
       setLoading(false);
     }
-  }, [timeRange]);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     fetchAllData();
-  }, [timeRange, fetchAllData]);
+  }, [startDate, endDate, fetchAllData]);
 
   const calculateActivityGrowth = () => {
     if (!dashboardStats || dashboardStats.lastWeekActivity === null || dashboardStats.thisWeekActivity === null) {
@@ -189,22 +195,35 @@ export default function AdminAnalytics() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <div className="flex space-x-2">
-            <select 
-              value={timeRange} 
-              onChange={(e) => setTimeRange(parseInt(e.target.value))}
-              className="border border-gray-300 rounded-md px-3 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value={7}>Last 7 days</option>
-              <option value={30}>Last 30 days</option>
-              <option value={90}>Last 90 days</option>
-            </select>
-            <button 
-              onClick={fetchAllData}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              Refresh
-            </button>
+          <div className="flex space-x-4">
+            <div className="flex flex-col">
+              <label htmlFor="startDate" className="text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <input
+                type="date"
+                id="startDate"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="endDate" className="text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <input
+                type="date"
+                id="endDate"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex items-end">
+              <button 
+                onClick={fetchAllData}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
 
