@@ -126,7 +126,7 @@ export default function AdminAnalytics() {
 
   const calculateActivityGrowth = () => {
     if (!dashboardStats || dashboardStats.lastWeekActivity === null || dashboardStats.thisWeekActivity === null) {
-      return { trend: 'neutral' as const, value: '0%' };
+      return { trend: 'neutral' as const, value: '0.0%' };
     }
     const growth = dashboardStats.lastWeekActivity > 0 ? 
       ((dashboardStats.thisWeekActivity - dashboardStats.lastWeekActivity) / dashboardStats.lastWeekActivity) * 100 : 0;
@@ -134,6 +134,19 @@ export default function AdminAnalytics() {
       trend: growth > 0 ? 'up' as const : growth < 0 ? 'down' as const : 'neutral' as const,
       value: `${Math.abs(growth).toFixed(1)}%`
     };
+  };
+
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
+
+  const formatPercentage = (num: number): string => {
+    return (typeof num === 'number' ? num : 0).toFixed(1) + '%';
   };
 
   const getComplianceColor = (rate: number) => {
@@ -200,18 +213,18 @@ export default function AdminAnalytics() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <KPICard
               title="Total Ambassadors"
-              value={dashboardStats.totalAmbassadors}
+              value={formatNumber(dashboardStats.totalAmbassadors)}
               subtitle={`${dashboardStats.activeAmbassadors} active`}
               color="#3B82F6"
             />
             <KPICard
               title="Compliance Rate"
-              value={`${(dashboardStats.overallComplianceRate || 0).toFixed(1)}%`}
+              value={formatPercentage(dashboardStats.overallComplianceRate || 0)}
               color={getComplianceColor(dashboardStats.overallComplianceRate || 0)}
             />
             <KPICard
               title="This Week Activity"
-              value={dashboardStats.thisWeekActivity}
+              value={formatNumber(dashboardStats.thisWeekActivity)}
               trend={activityGrowth.trend}
               trendValue={activityGrowth.value}
               color="#10B981"
@@ -376,10 +389,10 @@ export default function AdminAnalytics() {
                           performer.complianceScore >= 60 ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'
                         }`}>
-                          {(typeof performer.complianceScore === 'number' ? performer.complianceScore : 0).toFixed(1)}%
+                          {formatPercentage(performer.complianceScore || 0)}
                         </span>
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{performer.totalActivity}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatNumber(performer.totalActivity)}</td>
                     </tr>
                   ))}
                 </tbody>

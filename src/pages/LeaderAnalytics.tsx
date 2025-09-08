@@ -83,6 +83,19 @@ export default function LeaderAnalytics() {
 
   const leaderId = localStorage.getItem('userId');
 
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
+
+  const formatPercentage = (num: number): string => {
+    return (typeof num === 'number' ? num : 0).toFixed(1) + '%';
+  };
+
   const fetchTeamAnalytics = useCallback(async () => {
     if (!leaderId) return;
 
@@ -241,12 +254,12 @@ export default function LeaderAnalytics() {
           />
           <TeamKPICard
             title="Avg Compliance"
-            value={`${(typeof stats.avgComplianceScore === 'number' ? stats.avgComplianceScore : 0).toFixed(1)}%`}
+            value={formatPercentage(stats.avgComplianceScore || 0)}
             color={getComplianceColor(stats.avgComplianceScore)}
           />
           <TeamKPICard
             title="Total Activity"
-            value={stats.totalActivity}
+            value={formatNumber(stats.totalActivity)}
             subtitle="This week"
             color="#10B981"
           />
@@ -415,7 +428,7 @@ export default function LeaderAnalytics() {
                         member.complianceScore >= 60 ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
                       }`}>
-                        {(typeof member.complianceScore === 'number' ? member.complianceScore : 0).toFixed(1)}%
+                        {formatPercentage(member.complianceScore || 0)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.stories}</td>
