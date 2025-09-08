@@ -1,165 +1,441 @@
-// src/pages/AdminAnalytics.tsx
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import Layout from '../components/Layout';
+import analyticsAPI, {
+  DashboardStats,
+  ActivityTrend,
+  TeamPerformance,
+  UserEngagement,
+  ComplianceTrend,
+  ActivityDistribution,
+  TopPerformers,
+  InactiveUsers
+} from '../api/analytics';
 import {
-  LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, CartesianGrid, BarChart, Bar, ResponsiveContainer,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  RadialBarChart,
+  RadialBar
 } from 'recharts';
+import { format } from 'date-fns';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9457EB'];
+const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16'];
 
-// ✅ Type definitions
-type MonthlyActivityItem = {
-  month: string;
-  stories?: number;
-  posts?: number;
-  reels?: number;
-};
+interface KPICardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: string;
+  color?: string;
+}
 
-type TeamActivityItem = {
-  teamName: string;
-  stories?: number;
-  posts?: number;
-  reels?: number;
-};
+const KPICard: React.FC<KPICardProps> = ({ title, value, subtitle, trend, trendValue, color = 'blue' }) => {
+  const getTrendIcon = () => {
+    if (trend === 'up') return '↗️';
+    if (trend === 'down') return '↘️';
+    return '➖';
+  };
 
-type TeamContributionItem = {
-  team: string;
-  percentage: number;
-};
+  const getTrendColor = () => {
+    if (trend === 'up') return 'text-green-600';
+    if (trend === 'down') return 'text-red-600';
+    return 'text-gray-500';
+  };
 
-type OverallComplianceItem = {
-  week: string;
-  compliantAmbassadors: number;
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md border-l-4" style={{ borderLeftColor: color }}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+        </div>
+        {trend && trendValue && (
+          <div className={`text-sm font-medium ${getTrendColor()}`}>
+            {getTrendIcon()} {trendValue}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default function AdminAnalytics() {
-  const [monthlyActivity, setMonthlyActivity] = useState<MonthlyActivityItem[]>([]);
-  const [teamActivity, setTeamActivity] = useState<TeamActivityItem[]>([]);
-  const [teamContribution, setTeamContribution] = useState<TeamContributionItem[]>([]);
-  const [overallCompliance, setOverallCompliance] = useState<OverallComplianceItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [activityTrends, setActivityTrends] = useState<ActivityTrend[]>([]);
+  const [teamPerformance, setTeamPerformance] = useState<TeamPerformance[]>([]);
+  const [userEngagement, setUserEngagement] = useState<UserEngagement[]>([]);
+  const [complianceTrends, setComplianceTrends] = useState<ComplianceTrend[]>([]);
+  const [activityDistribution, setActivityDistribution] = useState<ActivityDistribution[]>([]);
+  const [topPerformers, setTopPerformers] = useState<TopPerformers[]>([]);
+  const [inactiveUsers, setInactiveUsers] = useState<InactiveUsers[]>([]);
+  const [timeRange, setTimeRange] = useState(30);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res1 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/monthly-activity');
-        const res2 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-activity');
-        const res3 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/team-contribution');
-        const res4 = await axios.get('https://ambassador-tracking-backend-production.up.railway.app/analytics/overall-compliance-rate');
+    fetchAllData();
+  }, [timeRange]);
 
-        // ✅ Convert object responses to arrays if needed
-        const monthlyData: MonthlyActivityItem[] = Array.isArray(res1.data)
-          ? res1.data
-          : Object.entries(res1.data).map(([month, counts]) => ({
-              month,
-              ...(counts as Partial<MonthlyActivityItem>),
-            }));
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const teamData: TeamActivityItem[] = Array.isArray(res2.data)
-          ? res2.data
-          : Object.entries(res2.data).map(([teamName, counts]) => ({
-              teamName,
-              ...(counts as Partial<TeamActivityItem>),
-            }));
+      const [
+        statsData,
+        trendsData,
+        performanceData,
+        engagementData,
+        complianceData,
+        distributionData,
+        performersData,
+        inactiveData
+      ] = await Promise.all([
+        analyticsAPI.getDashboardStats(),
+        analyticsAPI.getActivityTrends(timeRange),
+        analyticsAPI.getTeamPerformance(),
+        analyticsAPI.getUserEngagement(),
+        analyticsAPI.getComplianceTrends(6),
+        analyticsAPI.getActivityDistribution(),
+        analyticsAPI.getTopPerformers(5),
+        analyticsAPI.getInactiveUsers(7)
+      ]);
 
-        const contributionData: TeamContributionItem[] = Array.isArray(res3.data)
-          ? res3.data
-          : Object.entries(res3.data).map(([team, counts]) => ({
-              team,
-              percentage: (counts as any).percentage ?? 0,
-            }));
+      setDashboardStats(statsData);
+      setActivityTrends(trendsData);
+      setTeamPerformance(performanceData);
+      setUserEngagement(engagementData);
+      setComplianceTrends(complianceData);
+      setActivityDistribution(distributionData);
+      setTopPerformers(performersData);
+      setInactiveUsers(inactiveData);
+    } catch (err) {
+      console.error('Error fetching analytics data:', err);
+      setError('Failed to load analytics data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const complianceData: OverallComplianceItem[] = Array.isArray(res4.data)
-          ? res4.data
-          : Object.entries(res4.data).map(([week, counts]) => ({
-              week,
-              compliantAmbassadors: (counts as any).compliantAmbassadors ?? 0,
-            }));
-
-        setMonthlyActivity(monthlyData);
-        setTeamActivity(teamData);
-        setTeamContribution(contributionData);
-        setOverallCompliance(complianceData);
-      } catch (err) {
-        console.error('Error fetching admin analytics:', err);
-      }
+  const calculateActivityGrowth = () => {
+    if (!dashboardStats) return { trend: 'neutral' as const, value: '0%' };
+    const growth = dashboardStats.lastWeekActivity > 0 ? 
+      ((dashboardStats.thisWeekActivity - dashboardStats.lastWeekActivity) / dashboardStats.lastWeekActivity) * 100 : 0;
+    return {
+      trend: growth > 0 ? 'up' as const : growth < 0 ? 'down' as const : 'neutral' as const,
+      value: `${Math.abs(growth).toFixed(1)}%`
     };
+  };
 
-    fetchData();
-  }, []);
+  const getComplianceColor = (rate: number) => {
+    if (rate >= 80) return '#10B981'; // Green
+    if (rate >= 60) return '#F59E0B'; // Yellow
+    return '#EF4444'; // Red
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+          <button 
+            onClick={fetchAllData}
+            className="ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+          >
+            Retry
+          </button>
+        </div>
+      </Layout>
+    );
+  }
+
+  const activityGrowth = calculateActivityGrowth();
 
   return (
     <Layout>
-      <h1 className="text-2xl font-bold mb-6">Admin Analytics Dashboard</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* 1. Monthly Ambassador Activity */}
-        <div>
-          <h2 className="font-semibold text-lg mb-2">Monthly Ambassador Activity</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyActivity}>
-              <CartesianGrid stroke="#ccc" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="stories" stroke="#8884d8" />
-              <Line type="monotone" dataKey="posts" stroke="#82ca9d" />
-              <Line type="monotone" dataKey="reels" stroke="#ffc658" />
-            </LineChart>
-          </ResponsiveContainer>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+          <div className="flex space-x-2">
+            <select 
+              value={timeRange} 
+              onChange={(e) => setTimeRange(parseInt(e.target.value))}
+              className="border border-gray-300 rounded-md px-3 py-2 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={7}>Last 7 days</option>
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+            </select>
+            <button 
+              onClick={fetchAllData}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
-        {/* 2. Team Activity */}
-        <div>
-          <h2 className="font-semibold text-lg mb-2">Team Activity Comparison</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={teamActivity}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="teamName" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="stories" fill="#8884d8" />
-              <Bar dataKey="posts" fill="#82ca9d" />
-              <Bar dataKey="reels" fill="#ffc658" />
-            </BarChart>
-          </ResponsiveContainer>
+        {/* KPI Cards */}
+        {dashboardStats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <KPICard
+              title="Total Ambassadors"
+              value={dashboardStats.totalAmbassadors}
+              subtitle={`${dashboardStats.activeAmbassadors} active`}
+              color="#3B82F6"
+            />
+            <KPICard
+              title="Compliance Rate"
+              value={`${dashboardStats.overallComplianceRate.toFixed(1)}%`}
+              color={getComplianceColor(dashboardStats.overallComplianceRate)}
+            />
+            <KPICard
+              title="This Week Activity"
+              value={dashboardStats.thisWeekActivity}
+              trend={activityGrowth.trend}
+              trendValue={activityGrowth.value}
+              color="#10B981"
+            />
+            <KPICard
+              title="Active Warnings"
+              value={dashboardStats.activeWarnings}
+              subtitle={`${dashboardStats.totalTeams} teams`}
+              color="#EF4444"
+            />
+          </div>
+        )}
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Activity Trends */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Activity Trends</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={activityTrends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={(date) => format(new Date(date), 'MM/dd')}
+                />
+                <YAxis />
+                <Tooltip 
+                  labelFormatter={(date) => format(new Date(date), 'MMM dd, yyyy')}
+                />
+                <Legend />
+                <Area 
+                  type="monotone" 
+                  dataKey="stories" 
+                  stackId="1" 
+                  stroke="#3B82F6" 
+                  fill="#3B82F6" 
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="posts" 
+                  stackId="1" 
+                  stroke="#10B981" 
+                  fill="#10B981" 
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="reels" 
+                  stackId="1" 
+                  stroke="#F59E0B" 
+                  fill="#F59E0B" 
+                  fillOpacity={0.6}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Compliance Trends */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Compliance Over Time</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={complianceTrends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="period" />
+                <YAxis domain={[0, 100]} />
+                <Tooltip formatter={(value) => [`${value}%`, 'Compliance Rate']} />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="complianceRate" 
+                  stroke="#10B981" 
+                  strokeWidth={3}
+                  dot={{ fill: '#10B981', strokeWidth: 2, r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Team Performance */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Team Performance</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={teamPerformance.slice(0, 6)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="teamName" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="complianceRate" fill="#3B82F6" name="Compliance %" />
+                <Bar dataKey="avgActivityPerMember" fill="#10B981" name="Avg Activity" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Activity Distribution */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Content Distribution</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={activityDistribution}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="count"
+                  nameKey="mediaType"
+                  label={({ mediaType, percentage }) => `${mediaType}: ${percentage.toFixed(1)}%`}
+                >
+                  {activityDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        {/* 3. Team Contribution Pie */}
-        <div>
-          <h2 className="font-semibold text-lg mb-2">Team Contribution %</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={teamContribution}
-                dataKey="percentage"
-                nameKey="team"
-                outerRadius={100}
-                label
-              >
-                {teamContribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        {/* Tables */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Top Performers */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Top Performers</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {topPerformers.map((performer, index) => (
+                    <tr key={performer.userId}>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-8 w-8">
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                              index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : index === 2 ? 'bg-amber-600' : 'bg-blue-500'
+                            }`}>
+                              {index + 1}
+                            </div>
+                          </div>
+                          <div className="ml-3">
+                            <div className="text-sm font-medium text-gray-900">{performer.userName}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{performer.teamName || 'N/A'}</td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          performer.complianceScore >= 80 ? 'bg-green-100 text-green-800' :
+                          performer.complianceScore >= 60 ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {performer.complianceScore.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{performer.totalActivity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-        {/* 4. Overall Compliance */}
-        <div>
-          <h2 className="font-semibold text-lg mb-2">Overall Compliance Rate</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={overallCompliance}>
-              <XAxis dataKey="week" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="compliantAmbassadors" stroke="#00C49F" />
-            </LineChart>
-          </ResponsiveContainer>
+          {/* Inactive Users */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Attention Needed</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inactive Days</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warnings</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {inactiveUsers.slice(0, 5).map((user) => (
+                    <tr key={user.userId}>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{user.userName}</div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.teamName || 'N/A'}</td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          user.daysSinceLastActivity >= 14 ? 'bg-red-100 text-red-800' :
+                          user.daysSinceLastActivity >= 7 ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {user.daysSinceLastActivity} days
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          user.warningCount >= 2 ? 'bg-red-100 text-red-800' :
+                          user.warningCount >= 1 ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                          {user.warningCount}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </Layout>
