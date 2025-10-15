@@ -59,8 +59,10 @@ export default function AdminDashboard() {
   const [lastUpdate, setLastUpdate] = useState<string>('');
   const [checkingTags, setCheckingTags] = useState(false);
   const [checkingHealth, setCheckingHealth] = useState(false);
+  const [checkingCredentials, setCheckingCredentials] = useState(false);
   const [tagCheckResult, setTagCheckResult] = useState<string | null>(null);
   const [healthCheckResult, setHealthCheckResult] = useState<string | null>(null);
+  const [credentialsCheckResult, setCredentialsCheckResult] = useState<string | null>(null);
 
   const [users, setUsers] = useState<User[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -140,6 +142,11 @@ export default function AdminDashboard() {
           errorDetails = `${message}: ${errorName} - ${errorMessage}`;
         }
         
+        // Handle configuration errors specifically
+        if (response.data.errors && Array.isArray(response.data.errors)) {
+          errorDetails = `${message}: ${response.data.errors.join(', ')}`;
+        }
+        
         setTagCheckResult(`Error: ${errorDetails}`);
       } else {
         // If we get an unexpected response structure
@@ -189,7 +196,7 @@ export default function AdminDashboard() {
     setHealthCheckResult(null);
     try {
       const response = await axios.get(
-        'https://ambassador-tracking-backend-production.up.railway.app/webhook/health-check'
+        'https://ambassador-tracking-backend-production.up.railway.app/webhook/health'
       );
       
       if (response.data && response.data.success) {
@@ -241,6 +248,68 @@ export default function AdminDashboard() {
       }
     } finally {
       setCheckingHealth(false);
+    }
+  }, []);
+
+  const testCredentials = useCallback(async () => {
+    setCheckingCredentials(true);
+    setCredentialsCheckResult(null);
+    try {
+      const response = await axios.get(
+        'https://ambassador-tracking-backend-production.up.railway.app/webhook/test-credentials'
+      );
+      
+      if (response.data && response.data.success) {
+        setCredentialsCheckResult(`Success: ${response.data.message}`);
+      } else if (response.data && response.data.success === false) {
+        const message = response.data.message || 'Credentials test failed';
+        let errorDetails = message;
+        
+        if (response.data.error) {
+          const errorName = response.data.error.name || '';
+          const errorMessage = response.data.error.message || '';
+          errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+        }
+        
+        if (response.data.errorResponse) {
+          errorDetails = `${message}: ${response.data.errorResponse.status} - ${JSON.stringify(response.data.errorResponse.data)}`;
+        }
+        
+        setCredentialsCheckResult(`Error: ${errorDetails}`);
+      } else {
+        setCredentialsCheckResult('Credentials test completed with unexpected response');
+      }
+    } catch (err: any) {
+      console.error('Error testing credentials:', err);
+      if (err.response) {
+        if (err.response.status === 404) {
+          setCredentialsCheckResult('Error: Credentials test endpoint not found (404)');
+        } else if (err.response.status === 500) {
+          // Handle detailed error response
+          if (err.response.data && err.response.data.success === false) {
+            const message = err.response.data.message || 'Server error';
+            let errorDetails = message;
+            
+            if (err.response.data.error) {
+              const errorName = err.response.data.error.name || '';
+              const errorMessage = err.response.data.error.message || '';
+              errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+            }
+            
+            setCredentialsCheckResult(`Error: ${errorDetails}`);
+          } else {
+            setCredentialsCheckResult(`Error: ${err.response.status} - ${err.response.statusText}`);
+          }
+        } else {
+          setCredentialsCheckResult(`Error: ${err.response.status} - ${err.response.statusText}`);
+        }
+      } else if (err.request) {
+        setCredentialsCheckResult('Error: No response from server. Check your connection.');
+      } else {
+        setCredentialsCheckResult(`Error: ${err.message || 'Unknown error occurred'}`);
+      }
+    } finally {
+      setCheckingCredentials(false);
     }
   }, []);
 
@@ -366,6 +435,17 @@ export default function AdminDashboard() {
           >
             {checkingHealth ? 'Checking...' : 'Health Check'}
           </button>
+          <button
+            onClick={testCredentials}
+            disabled={checkingCredentials}
+            className={`px-4 py-1 rounded text-sm w-full sm:w-auto ${
+              checkingCredentials 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-yellow-600 hover:bg-yellow-700 text-white'
+            }`}
+          >
+            {checkingCredentials ? 'Testing...' : 'Test Credentials'}
+          </button>
         </div>
       </div>
 
@@ -378,6 +458,12 @@ export default function AdminDashboard() {
       {healthCheckResult && (
         <div className={`mb-4 p-3 rounded ${healthCheckResult.includes('successful') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {healthCheckResult}
+        </div>
+      )}
+
+      {credentialsCheckResult && (
+        <div className={`mb-4 p-3 rounded ${credentialsCheckResult.includes('Success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {credentialsCheckResult}
         </div>
       )}
 
