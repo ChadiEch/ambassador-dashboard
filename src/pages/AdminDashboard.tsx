@@ -11,7 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
- 
+
 interface AmbassadorSummary {
   id: string;
   name: string;
@@ -43,7 +43,6 @@ interface User {
   link?: string; // ✅ Added this
 }
 
-
 interface Team {
   id: string;
   name: string;
@@ -58,6 +57,8 @@ export default function AdminDashboard() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [lastUpdate, setLastUpdate] = useState<string>('');
+  const [checkingTags, setCheckingTags] = useState(false);
+  const [tagCheckResult, setTagCheckResult] = useState<string | null>(null);
 
   const [users, setUsers] = useState<User[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -105,6 +106,29 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   }, [startDate, endDate]);
+
+  const manuallyCheckTags = useCallback(async () => {
+    setCheckingTags(true);
+    setTagCheckResult(null);
+    try {
+      const response = await axios.get(
+        'https://ambassador-tracking-backend-production.up.railway.app/webhook/check-tags'
+      );
+      
+      if (response.data.success) {
+        setTagCheckResult(`Success: ${response.data.data.message}`);
+        // Refresh the dashboard data to show any new tagged media
+        fetchAll();
+      } else {
+        setTagCheckResult('Failed to check tags');
+      }
+    } catch (err) {
+      console.error('Error checking tags:', err);
+      setTagCheckResult('Error checking tags. Please try again.');
+    } finally {
+      setCheckingTags(false);
+    }
+  }, [fetchAll]);
 
   const fetchUsersAndTeams = useCallback(async () => {
     try {
@@ -206,8 +230,25 @@ export default function AdminDashboard() {
           >
             Refresh
           </button>
+          <button
+            onClick={manuallyCheckTags}
+            disabled={checkingTags}
+            className={`px-4 py-1 rounded text-sm w-full sm:w-auto ${
+              checkingTags 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-purple-600 hover:bg-purple-700 text-white'
+            }`}
+          >
+            {checkingTags ? 'Checking...' : 'Check Instagram Tags'}
+          </button>
         </div>
       </div>
+
+      {tagCheckResult && (
+        <div className={`mb-4 p-3 rounded ${tagCheckResult.includes('Success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {tagCheckResult}
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-3 mb-4">
         <input
