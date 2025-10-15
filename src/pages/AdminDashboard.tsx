@@ -244,8 +244,7 @@ export default function AdminDashboard() {
           className="border px-3 py-1 rounded text-sm"
         >
           <option value="name">Sort by Name</option>
-          <option value="activity">Sort by Activity</option>
-          <option value="activities">Sort by Total Activities</option>
+          <option value="activities">Sort by Activities</option>
           <option value="compliance">Sort by Compliance</option>
           <option value="lastUpload">Sort by Last Upload</option>
         </select>
