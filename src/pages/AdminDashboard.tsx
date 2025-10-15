@@ -132,9 +132,14 @@ export default function AdminDashboard() {
       } else if (response.data && response.data.success === false) {
         // Handle error responses from our improved backend
         const message = response.data.message || 'Tag check failed';
-        const errorDetails = response.data.error ? 
-          `${message}: ${response.data.error.name || ''} - ${response.data.error.message || ''}` : 
-          message;
+        let errorDetails = message;
+        
+        if (response.data.error) {
+          const errorName = response.data.error.name || '';
+          const errorMessage = response.data.error.message || '';
+          errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+        }
+        
         setTagCheckResult(`Error: ${errorDetails}`);
       } else {
         // If we get an unexpected response structure
@@ -152,9 +157,14 @@ export default function AdminDashboard() {
           // Handle detailed error response from our improved backend
           if (err.response.data && err.response.data.success === false) {
             const message = err.response.data.message || 'Server error';
-            const errorDetails = err.response.data.error ? 
-              `${message}: ${err.response.data.error.name || ''} - ${err.response.data.error.message || ''}` : 
-              message;
+            let errorDetails = message;
+            
+            if (err.response.data.error) {
+              const errorName = err.response.data.error.name || '';
+              const errorMessage = err.response.data.error.message || '';
+              errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+            }
+            
             setTagCheckResult(`Error: ${errorDetails}`);
           } else {
             setTagCheckResult('Error: Server error (500) - Failed to check tags');
@@ -196,9 +206,14 @@ export default function AdminDashboard() {
           // Handle detailed error response
           if (err.response.data && err.response.data.success === false) {
             const message = err.response.data.message || 'Server error';
-            const errorDetails = err.response.data.error ? 
-              `${message}: ${err.response.data.error.name || ''} - ${err.response.data.error.message || ''}` : 
-              message;
+            let errorDetails = message;
+            
+            if (err.response.data.error) {
+              const errorName = err.response.data.error.name || '';
+              const errorMessage = err.response.data.error.message || '';
+              errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+            }
+            
             setHealthCheckResult(`Error: ${errorDetails}`);
           } else {
             setHealthCheckResult(`Error: ${err.response.status} - ${err.response.statusText}`);
