@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
 import TeamNotes from '../components/TeamNotes';
@@ -54,6 +54,7 @@ interface Team {
 export default function AdminDashboard() {
   const [ambassadors, setAmbassadors] = useState<AmbassadorSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [lastUpdate, setLastUpdate] = useState<string>('');
@@ -69,6 +70,7 @@ export default function AdminDashboard() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await axios.get(
         'https://ambassador-tracking-backend-production.up.railway.app/analytics/all-compliance',
@@ -98,6 +100,7 @@ export default function AdminDashboard() {
       setLastUpdate(new Date().toLocaleTimeString());
     } catch (err) {
       console.error('Error fetching ambassador data:', err);
+      setError('Failed to load ambassador data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -110,17 +113,17 @@ export default function AdminDashboard() {
         axios.get('https://ambassador-tracking-backend-production.up.railway.app/admin/teams'),
       ]);
       setUsers(usersRes.data);
-setTeams(
-  teamsRes.data.map((t: any) => ({
-    id: t.id,
-    name: t.name,
-    leaderId: t.leader?.id,
-    members: (t.members || []).map((m: any) => m.id),
-  }))
-);
-
+      setTeams(
+        teamsRes.data.map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          leaderId: t.leader?.id,
+          members: (t.members || []).map((m: any) => m.id),
+        }))
+      );
     } catch (err) {
       console.error('Error loading users or teams', err);
+      setError('Failed to load users and teams. Please try again.');
     }
   }, []);
 
@@ -131,44 +134,47 @@ setTeams(
     return () => clearInterval(interval);
   }, [fetchAll, fetchUsersAndTeams]);
 
-  const filtered = ambassadors
-    .filter((amb) => {
-      const user = users.find((u) => u.id === amb.id);
-      if (!user || user.role === 'admin' || !user.active) return false;
+  // Memoize filtered and sorted data
+  const filteredAmbassadors = useMemo(() => {
+    return ambassadors
+      .filter((amb) => {
+        const user = users.find((u) => u.id === amb.id);
+        if (!user || user.role === 'admin' || !user.active) return false;
 
-      const matchesSearch = amb.name.toLowerCase().includes(search.toLowerCase());
-      const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-      const matchesTeam =
-        teamFilter === 'all' ||
-        teams.find((t) => t.id === teamFilter)?.members.includes(amb.id);
+        const matchesSearch = amb.name.toLowerCase().includes(search.toLowerCase());
+        const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+        const matchesTeam =
+          teamFilter === 'all' ||
+          teams.find((t) => t.id === teamFilter)?.members.includes(amb.id);
 
-      return matchesSearch && matchesRole && matchesTeam;
-    })
-    .sort((a, b) => {
-      let aVal: number | string = '';
-      let bVal: number | string = '';
+        return matchesSearch && matchesRole && matchesTeam;
+      })
+      .sort((a, b) => {
+        let aVal: number | string = '';
+        let bVal: number | string = '';
 
-      if (sortField === 'name') {
-        aVal = a.name.toLowerCase();
-        bVal = b.name.toLowerCase();
-      } else if (sortField === 'activity') {
-        aVal = new Date(a.lastActivity || 0).getTime();
-        bVal = new Date(b.lastActivity || 0).getTime();
-      } else if (sortField === 'compliance') {
-        const aGood = ['story', 'post', 'reel'].filter(
-          (k) => a.compliance[k as keyof typeof a.compliance] === 'green'
-        ).length;
-        const bGood = ['story', 'post', 'reel'].filter(
-          (k) => b.compliance[k as keyof typeof b.compliance] === 'green'
-        ).length;
-        aVal = aGood;
-        bVal = bGood;
-      }
+        if (sortField === 'name') {
+          aVal = a.name.toLowerCase();
+          bVal = b.name.toLowerCase();
+        } else if (sortField === 'activity') {
+          aVal = new Date(a.lastActivity || 0).getTime();
+          bVal = new Date(b.lastActivity || 0).getTime();
+        } else if (sortField === 'compliance') {
+          const aGood = ['story', 'post', 'reel'].filter(
+            (k) => a.compliance[k as keyof typeof a.compliance] === 'green'
+          ).length;
+          const bGood = ['story', 'post', 'reel'].filter(
+            (k) => b.compliance[k as keyof typeof b.compliance] === 'green'
+          ).length;
+          aVal = aGood;
+          bVal = bGood;
+        }
 
-      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
+        if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+  }, [ambassadors, users, teams, search, roleFilter, teamFilter, sortField, sortOrder]);
 
   return (
     <Layout>
@@ -248,9 +254,11 @@ setTeams(
 
       {loading ? (
         <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((amb) => {
+          {filteredAmbassadors.map((amb) => {
             const user = users.find((u) => u.id === amb.id);
 const team = teams.find(
   (t) =>
