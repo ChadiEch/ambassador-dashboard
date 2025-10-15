@@ -189,11 +189,24 @@ export default function AdminDashboard() {
     setHealthCheckResult(null);
     try {
       const response = await axios.get(
-        'https://ambassador-tracking-backend-production.up.railway.app/webhook/health'
+        'https://ambassador-tracking-backend-production.up.railway.app/webhook/health-check'
       );
       
-      if (response.data && response.data.status === 'OK') {
-        setHealthCheckResult('Health check successful: ' + (response.data.message || 'Service is running'));
+      if (response.data && response.data.success) {
+        setHealthCheckResult(`Health Check Success: ${response.data.message}`);
+      } else if (response.data && response.data.success === false) {
+        const message = response.data.message || 'Health check failed';
+        let errorDetails = message;
+        
+        if (response.data.error) {
+          const errorName = response.data.error.name || '';
+          const errorMessage = response.data.error.message || '';
+          errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+        } else if (response.data.errorResponse) {
+          errorDetails = `${message}: ${response.data.errorResponse.status} - ${JSON.stringify(response.data.errorResponse.data)}`;
+        }
+        
+        setHealthCheckResult(`Health Check Error: ${errorDetails}`);
       } else {
         setHealthCheckResult('Health check completed with unexpected response');
       }
