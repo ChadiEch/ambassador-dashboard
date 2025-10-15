@@ -102,14 +102,11 @@ setTeam(
         aVal = a.actual.stories + a.actual.posts + a.actual.reels;
         bVal = b.actual.stories + b.actual.posts + b.actual.reels;
       } else if (sortField === 'compliance') {
-        const aGood = ['story', 'post', 'reel'].filter(
-          (k) => a.compliance[k as keyof typeof a.compliance] === 'green'
-        ).length;
-        const bGood = ['story', 'post', 'reel'].filter(
-          (k) => b.compliance[k as keyof typeof b.compliance] === 'green'
-        ).length;
-        aVal = aGood;
-        bVal = bGood;
+        // For compliance sorting, count how many requirements are met
+        const aComplianceCount = Object.values(a.compliance).filter(status => status === 'green').length;
+        const bComplianceCount = Object.values(b.compliance).filter(status => status === 'green').length;
+        aVal = aComplianceCount;
+        bVal = bComplianceCount;
       }
 
       if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;

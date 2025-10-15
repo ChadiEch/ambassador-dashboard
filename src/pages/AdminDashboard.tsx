@@ -157,19 +157,20 @@ export default function AdminDashboard() {
           aVal = a.name.toLowerCase();
           bVal = b.name.toLowerCase();
         } else if (sortField === 'activity') {
-          aVal = new Date(a.lastActivity || 0).getTime();
-          bVal = new Date(b.lastActivity || 0).getTime();
+          // For activity sorting, we want the most recent activity first when descending
+          const aTime = a.lastActivity ? new Date(a.lastActivity).getTime() : 0;
+          const bTime = b.lastActivity ? new Date(b.lastActivity).getTime() : 0;
+          aVal = aTime;
+          bVal = bTime;
         } else if (sortField === 'compliance') {
-          const aGood = ['story', 'post', 'reel'].filter(
-            (k) => a.compliance[k as keyof typeof a.compliance] === 'green'
-          ).length;
-          const bGood = ['story', 'post', 'reel'].filter(
-            (k) => b.compliance[k as keyof typeof b.compliance] === 'green'
-          ).length;
-          aVal = aGood;
-          bVal = bGood;
+          // For compliance sorting, count how many requirements are met
+          const aComplianceCount = Object.values(a.compliance).filter(status => status === 'green').length;
+          const bComplianceCount = Object.values(b.compliance).filter(status => status === 'green').length;
+          aVal = aComplianceCount;
+          bVal = bComplianceCount;
         }
 
+        // Handle the sorting order
         if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
         return 0;
