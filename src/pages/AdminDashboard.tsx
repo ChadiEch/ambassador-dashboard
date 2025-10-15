@@ -129,6 +129,13 @@ export default function AdminDashboard() {
         const message = response.data.data.message || 'Tag check completed';
         setTagCheckResult(`Success: ${message}`);
         fetchAll();
+      } else if (response.data && response.data.success === false) {
+        // Handle error responses from our improved backend
+        const message = response.data.message || 'Tag check failed';
+        const errorDetails = response.data.error ? 
+          `${message}: ${response.data.error.name || ''} - ${response.data.error.message || ''}` : 
+          message;
+        setTagCheckResult(`Error: ${errorDetails}`);
       } else {
         // If we get an unexpected response structure
         setTagCheckResult('Tag check completed (response format unexpected)');
@@ -142,7 +149,16 @@ export default function AdminDashboard() {
         if (err.response.status === 404) {
           setTagCheckResult('Error: Tag checking endpoint not found (404)');
         } else if (err.response.status === 500) {
-          setTagCheckResult('Error: Server error (500) - Failed to check tags');
+          // Handle detailed error response from our improved backend
+          if (err.response.data && err.response.data.success === false) {
+            const message = err.response.data.message || 'Server error';
+            const errorDetails = err.response.data.error ? 
+              `${message}: ${err.response.data.error.name || ''} - ${err.response.data.error.message || ''}` : 
+              message;
+            setTagCheckResult(`Error: ${errorDetails}`);
+          } else {
+            setTagCheckResult('Error: Server error (500) - Failed to check tags');
+          }
         } else {
           setTagCheckResult(`Error: ${err.response.status} - ${err.response.statusText}`);
         }
@@ -176,6 +192,17 @@ export default function AdminDashboard() {
       if (err.response) {
         if (err.response.status === 404) {
           setHealthCheckResult('Error: Health check endpoint not found (404)');
+        } else if (err.response.status === 500) {
+          // Handle detailed error response
+          if (err.response.data && err.response.data.success === false) {
+            const message = err.response.data.message || 'Server error';
+            const errorDetails = err.response.data.error ? 
+              `${message}: ${err.response.data.error.name || ''} - ${err.response.data.error.message || ''}` : 
+              message;
+            setHealthCheckResult(`Error: ${errorDetails}`);
+          } else {
+            setHealthCheckResult(`Error: ${err.response.status} - ${err.response.statusText}`);
+          }
         } else {
           setHealthCheckResult(`Error: ${err.response.status} - ${err.response.statusText}`);
         }
