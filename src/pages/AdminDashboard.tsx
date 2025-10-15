@@ -65,7 +65,7 @@ export default function AdminDashboard() {
   const [roleFilter, setRoleFilter] = useState<'all' | 'ambassador' | 'leader'>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
 
-  const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('activity');
+  const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance' | 'activities' | 'lastUpload'>('activity');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const fetchAll = useCallback(async () => {
@@ -156,8 +156,8 @@ export default function AdminDashboard() {
         if (sortField === 'name') {
           aVal = a.name.toLowerCase();
           bVal = b.name.toLowerCase();
-        } else if (sortField === 'activity') {
-          // For activity sorting, we want the most recent activity first when descending
+        } else if (sortField === 'activity' || sortField === 'lastUpload') {
+          // For activity/last upload sorting, we want the most recent activity first when descending
           const aTime = a.lastActivity ? new Date(a.lastActivity).getTime() : 0;
           const bTime = b.lastActivity ? new Date(b.lastActivity).getTime() : 0;
           aVal = aTime;
@@ -168,6 +168,12 @@ export default function AdminDashboard() {
           const bComplianceCount = Object.values(b.compliance).filter(status => status === 'green').length;
           aVal = aComplianceCount;
           bVal = bComplianceCount;
+        } else if (sortField === 'activities') {
+          // For activities sorting, sum all activities
+          const aTotalActivities = a.actual.stories + a.actual.posts + a.actual.reels;
+          const bTotalActivities = b.actual.stories + b.actual.posts + b.actual.reels;
+          aVal = aTotalActivities;
+          bVal = bTotalActivities;
         }
 
         // Handle the sorting order
@@ -234,12 +240,14 @@ export default function AdminDashboard() {
         </select>
         <select
           value={sortField}
-          onChange={(e) => setSortField(e.target.value as 'name' | 'activity' | 'compliance')}
+          onChange={(e) => setSortField(e.target.value as 'name' | 'activity' | 'compliance' | 'activities' | 'lastUpload')}
           className="border px-3 py-1 rounded text-sm"
         >
           <option value="name">Sort by Name</option>
           <option value="activity">Sort by Activity</option>
+          <option value="activities">Sort by Total Activities</option>
           <option value="compliance">Sort by Compliance</option>
+          <option value="lastUpload">Sort by Last Upload</option>
         </select>
         <select
           value={sortOrder}

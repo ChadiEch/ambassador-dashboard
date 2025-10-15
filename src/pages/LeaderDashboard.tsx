@@ -34,13 +34,14 @@ interface TeamMemberSummary {
   role?: 'ambassador' | 'leader';
   active?: boolean;
   photoUrl?: string;
+  lastActivity?: string; // Add this property
 }
 
 export default function LeaderDashboard() {
   const [team, setTeam] = useState<TeamMemberSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance'>('activity');
+  const [sortField, setSortField] = useState<'name' | 'activity' | 'compliance' | 'activities' | 'lastUpload'>('activity');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -65,14 +66,14 @@ export default function LeaderDashboard() {
         );
     console.log('📦 team-compliance response:', res.data); // 👈 log response here
 
-        // ✅ Map photoUrl from the backend (fallbacks included)
+        // ✅ Map photoUrl and lastActivity from the backend (fallbacks included)
 setTeam(
   res.data.map((member: any) => ({
     ...member,
     photoUrl: member.photoUrl ?? member.photo_url ?? member.profileImage ?? '',
+    lastActivity: member.lastActivity ?? null,
   }))
 );
-
 
         setLastUpdate(new Date().toLocaleTimeString());
       } catch (err) {
@@ -98,15 +99,24 @@ setTeam(
       if (sortField === 'name') {
         aVal = a.name.toLowerCase();
         bVal = b.name.toLowerCase();
-      } else if (sortField === 'activity') {
-        aVal = a.actual.stories + a.actual.posts + a.actual.reels;
-        bVal = b.actual.stories + b.actual.posts + b.actual.reels;
+      } else if (sortField === 'activity' || sortField === 'lastUpload') {
+        // For activity/last upload sorting, we want the most recent activity first when descending
+        const aTime = a.lastActivity ? new Date(a.lastActivity).getTime() : 0;
+        const bTime = b.lastActivity ? new Date(b.lastActivity).getTime() : 0;
+        aVal = aTime;
+        bVal = bTime;
       } else if (sortField === 'compliance') {
         // For compliance sorting, count how many requirements are met
         const aComplianceCount = Object.values(a.compliance).filter(status => status === 'green').length;
         const bComplianceCount = Object.values(b.compliance).filter(status => status === 'green').length;
         aVal = aComplianceCount;
         bVal = bComplianceCount;
+      } else if (sortField === 'activities') {
+        // For activities sorting, sum all activities
+        const aTotalActivities = a.actual.stories + a.actual.posts + a.actual.reels;
+        const bTotalActivities = b.actual.stories + b.actual.posts + b.actual.reels;
+        aVal = aTotalActivities;
+        bVal = bTotalActivities;
       }
 
       if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
@@ -152,12 +162,14 @@ setTeam(
         />
         <select
           value={sortField}
-          onChange={(e) => setSortField(e.target.value as 'name' | 'activity' | 'compliance')}
+          onChange={(e) => setSortField(e.target.value as 'name' | 'activity' | 'compliance' | 'activities' | 'lastUpload')}
           className="border px-3 py-1 rounded text-sm"
         >
           <option value="name">Sort by Name</option>
           <option value="activity">Sort by Activity</option>
+          <option value="activities">Sort by Total Activities</option>
           <option value="compliance">Sort by Compliance</option>
+          <option value="lastUpload">Sort by Last Upload</option>
         </select>
         <select
           value={sortOrder}
