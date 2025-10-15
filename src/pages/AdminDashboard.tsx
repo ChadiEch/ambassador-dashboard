@@ -58,7 +58,9 @@ export default function AdminDashboard() {
   const [endDate, setEndDate] = useState('');
   const [lastUpdate, setLastUpdate] = useState<string>('');
   const [checkingTags, setCheckingTags] = useState(false);
+  const [checkingHealth, setCheckingHealth] = useState(false);
   const [tagCheckResult, setTagCheckResult] = useState<string | null>(null);
+  const [healthCheckResult, setHealthCheckResult] = useState<string | null>(null);
 
   const [users, setUsers] = useState<User[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -115,20 +117,77 @@ export default function AdminDashboard() {
         'https://ambassador-tracking-backend-production.up.railway.app/webhook/check-tags'
       );
       
-      if (response.data.success) {
-        setTagCheckResult(`Success: ${response.data.data.message}`);
+      // Handle different response structures
+      if (response.data && response.data.success) {
+        // If we get a success response with data
+        const message = response.data.data?.message || response.data.message || 'Tag check completed successfully';
+        setTagCheckResult(`Success: ${message}`);
         // Refresh the dashboard data to show any new tagged media
         fetchAll();
+      } else if (response.data && response.data.data) {
+        // If we get data but no explicit success flag
+        const message = response.data.data.message || 'Tag check completed';
+        setTagCheckResult(`Success: ${message}`);
+        fetchAll();
       } else {
-        setTagCheckResult('Failed to check tags');
+        // If we get an unexpected response structure
+        setTagCheckResult('Tag check completed (response format unexpected)');
+        fetchAll();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error checking tags:', err);
-      setTagCheckResult('Error checking tags. Please try again.');
+      // Handle different types of errors
+      if (err.response) {
+        // Server responded with error status
+        if (err.response.status === 404) {
+          setTagCheckResult('Error: Tag checking endpoint not found (404)');
+        } else if (err.response.status === 500) {
+          setTagCheckResult('Error: Server error (500) - Failed to check tags');
+        } else {
+          setTagCheckResult(`Error: ${err.response.status} - ${err.response.statusText}`);
+        }
+      } else if (err.request) {
+        // Request was made but no response received
+        setTagCheckResult('Error: No response from server. Check your connection.');
+      } else {
+        // Something else happened
+        setTagCheckResult(`Error: ${err.message || 'Unknown error occurred'}`);
+      }
     } finally {
       setCheckingTags(false);
     }
   }, [fetchAll]);
+
+  const checkHealth = useCallback(async () => {
+    setCheckingHealth(true);
+    setHealthCheckResult(null);
+    try {
+      const response = await axios.get(
+        'https://ambassador-tracking-backend-production.up.railway.app/webhook/health'
+      );
+      
+      if (response.data && response.data.status === 'OK') {
+        setHealthCheckResult('Health check successful: ' + (response.data.message || 'Service is running'));
+      } else {
+        setHealthCheckResult('Health check completed with unexpected response');
+      }
+    } catch (err: any) {
+      console.error('Error checking health:', err);
+      if (err.response) {
+        if (err.response.status === 404) {
+          setHealthCheckResult('Error: Health check endpoint not found (404)');
+        } else {
+          setHealthCheckResult(`Error: ${err.response.status} - ${err.response.statusText}`);
+        }
+      } else if (err.request) {
+        setHealthCheckResult('Error: No response from server. Check your connection.');
+      } else {
+        setHealthCheckResult(`Error: ${err.message || 'Unknown error occurred'}`);
+      }
+    } finally {
+      setCheckingHealth(false);
+    }
+  }, []);
 
   const fetchUsersAndTeams = useCallback(async () => {
     try {
@@ -241,12 +300,29 @@ export default function AdminDashboard() {
           >
             {checkingTags ? 'Checking...' : 'Check Instagram Tags'}
           </button>
+          <button
+            onClick={checkHealth}
+            disabled={checkingHealth}
+            className={`px-4 py-1 rounded text-sm w-full sm:w-auto ${
+              checkingHealth 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            }`}
+          >
+            {checkingHealth ? 'Checking...' : 'Health Check'}
+          </button>
         </div>
       </div>
 
       {tagCheckResult && (
         <div className={`mb-4 p-3 rounded ${tagCheckResult.includes('Success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {tagCheckResult}
+        </div>
+      )}
+
+      {healthCheckResult && (
+        <div className={`mb-4 p-3 rounded ${healthCheckResult.includes('successful') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {healthCheckResult}
         </div>
       )}
 
