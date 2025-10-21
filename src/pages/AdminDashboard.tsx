@@ -60,9 +60,13 @@ export default function AdminDashboard() {
   const [checkingTags, setCheckingTags] = useState(false);
   const [checkingHealth, setCheckingHealth] = useState(false);
   const [checkingCredentials, setCheckingCredentials] = useState(false);
+  const [discoveringAccounts, setDiscoveringAccounts] = useState(false);
+  const [validatingSetup, setValidatingSetup] = useState(false);
   const [tagCheckResult, setTagCheckResult] = useState<string | null>(null);
   const [healthCheckResult, setHealthCheckResult] = useState<string | null>(null);
   const [credentialsCheckResult, setCredentialsCheckResult] = useState<string | null>(null);
+  const [accountDiscoveryResult, setAccountDiscoveryResult] = useState<string | null>(null);
+  const [setupValidationResult, setSetupValidationResult] = useState<string | null>(null);
 
   const [users, setUsers] = useState<User[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -135,6 +139,13 @@ export default function AdminDashboard() {
         // Handle error responses from our improved backend
         const message = response.data.message || 'Tag check failed';
         let errorDetails = message;
+        
+        // Provide specific guidance for common Instagram setup issues
+        if (message.includes('Facebook Page ID') && message.includes('Instagram Business Account ID')) {
+          errorDetails += '\n\n💡 SOLUTION: You are using a Facebook Page ID instead of an Instagram Business Account ID. Use the "Discover Instagram Accounts" button to find the correct ID.';
+        } else if (message.includes('tags') && message.includes('Page')) {
+          errorDetails += '\n\n💡 SOLUTION: The "tags" endpoint is only available for Instagram Business Accounts. You are using a Facebook Page ID. Use the "Discover Instagram Accounts" button to find the correct ID.';
+        }
         
         if (response.data.error) {
           const errorName = response.data.error.name || '';
@@ -265,6 +276,13 @@ export default function AdminDashboard() {
         const message = response.data.message || 'Credentials test failed';
         let errorDetails = message;
         
+        // Provide specific guidance for common Instagram setup issues
+        if (message.includes('Facebook Page ID') && message.includes('Instagram Business Account ID')) {
+          errorDetails += '\n\n💡 SOLUTION: You are using a Facebook Page ID instead of an Instagram Business Account ID. Use the "Discover Instagram Accounts" button to find the correct ID.';
+        } else if (message.includes('tags') && message.includes('Page')) {
+          errorDetails += '\n\n💡 SOLUTION: The "tags" endpoint is only available for Instagram Business Accounts. You are using a Facebook Page ID. Use the "Discover Instagram Accounts" button to find the correct ID.';
+        }
+        
         if (response.data.error) {
           const errorName = response.data.error.name || '';
           const errorMessage = response.data.error.message || '';
@@ -290,6 +308,13 @@ export default function AdminDashboard() {
             const message = err.response.data.message || 'Server error';
             let errorDetails = message;
             
+            // Provide specific guidance for common Instagram setup issues
+            if (message.includes('Facebook Page ID') && message.includes('Instagram Business Account ID')) {
+              errorDetails += '\n\n💡 SOLUTION: You are using a Facebook Page ID instead of an Instagram Business Account ID. Use the "Discover Instagram Accounts" button to find the correct ID.';
+            } else if (message.includes('tags') && message.includes('Page')) {
+              errorDetails += '\n\n💡 SOLUTION: The "tags" endpoint is only available for Instagram Business Accounts. You are using a Facebook Page ID. Use the "Discover Instagram Accounts" button to find the correct ID.';
+            }
+            
             if (err.response.data.error) {
               const errorName = err.response.data.error.name || '';
               const errorMessage = err.response.data.error.message || '';
@@ -310,6 +335,157 @@ export default function AdminDashboard() {
       }
     } finally {
       setCheckingCredentials(false);
+    }
+  }, []);
+
+  const discoverInstagramAccounts = useCallback(async () => {
+    setDiscoveringAccounts(true);
+    setAccountDiscoveryResult(null);
+    try {
+      const response = await axios.get(
+        'https://ambassador-tracking-backend-production.up.railway.app/webhook/discover-instagram'
+      );
+      
+      if (response.data && response.data.success) {
+        setAccountDiscoveryResult(`Success: ${response.data.message}`);
+        
+        // If we found Instagram accounts, display them
+        if (response.data.instagramAccounts && response.data.instagramAccounts.length > 0) {
+          const accountsInfo = response.data.instagramAccounts.map((account: any) => 
+            `ID: ${account.instagramAccountId}, Username: ${account.instagramUsername}, Name: ${account.instagramName}`
+          ).join('\n');
+          setAccountDiscoveryResult(`Success: ${response.data.message}\n\nFound accounts:\n${accountsInfo}`);
+        }
+      } else if (response.data && response.data.success === false) {
+        const message = response.data.message || 'Account discovery failed';
+        let errorDetails = message;
+        
+        if (response.data.error) {
+          const errorName = response.data.error.name || '';
+          const errorMessage = response.data.error.message || '';
+          errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+        }
+        
+        if (response.data.errorResponse) {
+          errorDetails = `${message}: ${response.data.errorResponse.status} - ${JSON.stringify(response.data.errorResponse.data)}`;
+        }
+        
+        setAccountDiscoveryResult(`Error: ${errorDetails}`);
+      } else {
+        setAccountDiscoveryResult('Account discovery completed with unexpected response');
+      }
+    } catch (err: any) {
+      console.error('Error discovering Instagram accounts:', err);
+      if (err.response) {
+        if (err.response.status === 404) {
+          setAccountDiscoveryResult('Error: Account discovery endpoint not found (404)');
+        } else if (err.response.status === 500) {
+          // Handle detailed error response
+          if (err.response.data && err.response.data.success === false) {
+            const message = err.response.data.message || 'Server error';
+            let errorDetails = message;
+            
+            if (err.response.data.error) {
+              const errorName = err.response.data.error.name || '';
+              const errorMessage = err.response.data.error.message || '';
+              errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+            }
+            
+            setAccountDiscoveryResult(`Error: ${errorDetails}`);
+          } else {
+            setAccountDiscoveryResult(`Error: ${err.response.status} - ${err.response.statusText}`);
+          }
+        } else {
+          setAccountDiscoveryResult(`Error: ${err.response.status} - ${err.response.statusText}`);
+        }
+      } else if (err.request) {
+        setAccountDiscoveryResult('Error: No response from server. Check your connection.');
+      } else {
+        setAccountDiscoveryResult(`Error: ${err.message || 'Unknown error occurred'}`);
+      }
+    } finally {
+      setDiscoveringAccounts(false);
+    }
+  }, []);
+
+  const validateInstagramSetup = useCallback(async () => {
+    setValidatingSetup(true);
+    setSetupValidationResult(null);
+    try {
+      const response = await axios.get(
+        'https://ambassador-tracking-backend-production.up.railway.app/webhook/validate-instagram-setup'
+      );
+      
+      if (response.data && response.data.success) {
+        setSetupValidationResult(`Success: ${response.data.message}`);
+        
+        // Display detailed information
+        let details = `User: ${response.data.userName} (${response.data.userId})\n`;
+        details += `Has Instagram Business Accounts: ${response.data.hasInstagramBusinessAccounts ? 'Yes' : 'No'}\n`;
+        
+        if (response.data.configuredInstagramAccountId) {
+          details += `Configured Instagram Account ID: ${response.data.configuredInstagramAccountId}\n`;
+          details += `Configured Account Valid: ${response.data.configuredAccountValid ? 'Yes' : 'No'}\n`;
+        }
+        
+        if (response.data.pagesWithInstagram && response.data.pagesWithInstagram.length > 0) {
+          details += `\nPages with Instagram Business Accounts:\n`;
+          response.data.pagesWithInstagram.forEach((page: any) => {
+            details += `- ${page.pageName} (${page.pageId})\n`;
+            details += `  Instagram: ${page.instagramAccount.username} (${page.instagramAccount.id})\n`;
+          });
+        }
+        
+        setSetupValidationResult(`Success: ${response.data.message}\n\n${details}`);
+      } else if (response.data && response.data.success === false) {
+        const message = response.data.message || 'Setup validation failed';
+        let errorDetails = message;
+        
+        if (response.data.error) {
+          const errorName = response.data.error.name || '';
+          const errorMessage = response.data.error.message || '';
+          errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+        }
+        
+        if (response.data.errorResponse) {
+          errorDetails = `${message}: ${response.data.errorResponse.status} - ${JSON.stringify(response.data.errorResponse.data)}`;
+        }
+        
+        setSetupValidationResult(`Error: ${errorDetails}`);
+      } else {
+        setSetupValidationResult('Setup validation completed with unexpected response');
+      }
+    } catch (err: any) {
+      console.error('Error validating Instagram setup:', err);
+      if (err.response) {
+        if (err.response.status === 404) {
+          setSetupValidationResult('Error: Setup validation endpoint not found (404)');
+        } else if (err.response.status === 500) {
+          // Handle detailed error response
+          if (err.response.data && err.response.data.success === false) {
+            const message = err.response.data.message || 'Server error';
+            let errorDetails = message;
+            
+            if (err.response.data.error) {
+              const errorName = err.response.data.error.name || '';
+              const errorMessage = err.response.data.error.message || '';
+              errorDetails = `${message}: ${errorName} - ${errorMessage}`;
+            }
+            
+            setSetupValidationResult(`Error: ${errorDetails}`);
+          } else {
+            setSetupValidationResult(`Error: ${err.response.status} - ${err.response.statusText}`);
+          }
+        } else {
+          setSetupValidationResult(`Error: ${err.response.status} - ${err.response.statusText}`);
+        }
+      } else if (err.request) {
+        setSetupValidationResult('Error: No response from server. Check your connection.');
+      } else {
+        setSetupValidationResult(`Error: ${err.message || 'Unknown error occurred'}`);
+      }
+    } finally {
+      setValidatingSetup(false);
     }
   }, []);
 
@@ -446,6 +622,28 @@ export default function AdminDashboard() {
           >
             {checkingCredentials ? 'Testing...' : 'Test Credentials'}
           </button>
+          <button
+            onClick={discoverInstagramAccounts}
+            disabled={discoveringAccounts}
+            className={`px-4 py-1 rounded text-sm w-full sm:w-auto ${
+              discoveringAccounts 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+            }`}
+          >
+            {discoveringAccounts ? 'Discovering...' : 'Discover Instagram Accounts'}
+          </button>
+          <button
+            onClick={validateInstagramSetup}
+            disabled={validatingSetup}
+            className={`px-4 py-1 rounded text-sm w-full sm:w-auto ${
+              validatingSetup 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-purple-600 hover:bg-purple-700 text-white'
+            }`}
+          >
+            {validatingSetup ? 'Validating...' : 'Validate Instagram Setup'}
+          </button>
         </div>
       </div>
 
@@ -464,6 +662,18 @@ export default function AdminDashboard() {
       {credentialsCheckResult && (
         <div className={`mb-4 p-3 rounded ${credentialsCheckResult.includes('Success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {credentialsCheckResult}
+        </div>
+      )}
+
+      {accountDiscoveryResult && (
+        <div className={`mb-4 p-3 rounded ${accountDiscoveryResult.includes('Success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          <pre className="whitespace-pre-wrap">{accountDiscoveryResult}</pre>
+        </div>
+      )}
+
+      {setupValidationResult && (
+        <div className={`mb-4 p-3 rounded ${setupValidationResult.includes('Success') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          <pre className="whitespace-pre-wrap">{setupValidationResult}</pre>
         </div>
       )}
 
