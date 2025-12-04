@@ -16,6 +16,7 @@ import NotesPage from './pages/MyNotes';
 import InactiveUsers from './pages/InactiveUsers';
 import AdminAnalytics from './pages/AdminAnalytics';
 import LeaderAnalytics from './pages/LeaderAnalytics';
+import AdminManualActivity from './pages/AdminManualActivity';
 function App() {
   return (
     <Router>
@@ -86,6 +87,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminTeams />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/manual-activity"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminManualActivity />
             </ProtectedRoute>
           }
         />
